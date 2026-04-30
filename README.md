@@ -119,6 +119,8 @@ cd MedConnect-backend-microservices
 ### Create `.env` File
 Create a `.env` file in the **project root** directory:
 
+**⚠️ IMPORTANT: `.env` is in `.gitignore` and should NEVER be committed to version control!**
+
 ```env
 # JWT Configuration
 JWT_SECRET=medconnect-super-secret-key-32-chars-min-2026!!
@@ -145,6 +147,8 @@ EUREKA_SERVER_URL=http://localhost:8761/eureka/
 # OTP Expiry
 OTP_EXPIRY_MINUTES=10
 ```
+
+**Setup**: Copy the above template into your local `.env` file and update with your actual credentials. Git will ignore this file automatically.
 
 ### ⚠️ Important: Set Real Credentials
 
