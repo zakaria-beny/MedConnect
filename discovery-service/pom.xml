@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.rihla</groupId>
+        <groupId>com.medconnect</groupId>
         <artifactId>MedConnect-backend-microservices</artifactId>
         <version>0.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>

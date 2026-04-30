@@ -8,7 +8,7 @@
         <version>3.2.3</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.rihla</groupId>
+    <groupId>com.medconnect</groupId>
     <artifactId>MedConnect-backend-microservices</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>MedConnect-backend-microservices</name>

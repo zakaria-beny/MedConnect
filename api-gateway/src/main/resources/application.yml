@@ -70,9 +70,9 @@ spring:
             allowCredentials: true
 
 # ✅ Your custom config
-rihla:
+medconnect:
   security:
-    jwt-secret: ${JWT_SECRET:rihla-super-secret-key-32-chars-min-2026!!}
+    jwt-secret: ${JWT_SECRET:medconnect-super-secret-key-32-chars-min-2026!!}
 
 eureka:
   client:

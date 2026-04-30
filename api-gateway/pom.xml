@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.rihla</groupId>
+        <groupId>com.medconnect</groupId>
         <artifactId>MedConnect-backend-microservices</artifactId>
         <version>0.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -12,7 +12,7 @@
 
     <artifactId>api-gateway</artifactId>
     <name>api-gateway</name>
-    <description>Api Gateway pour Rihla</description>
+    <description>Api Gateway pour medconnect</description>
 
     <dependencies>
 
