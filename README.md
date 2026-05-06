@@ -2,9 +2,9 @@
 
 **Complete Spring Boot microservices platform for healthcare management**
 
-A production-ready microservices architecture with authentication, user management, subscriptions, and event streaming.
+A complete Spring Boot microservices architecture with authentication, user management, subscriptions, and event streaming.
 
-**Status**: ✅ Production Ready | **Version**: 1.0.0 | **Java**: 17+ | **Spring Boot**: 3.2.3
+**Status**: ✅ Ready | **Version**: 1.0.0 | **Java**: 17+ | **Spring Boot**: 3.2.3
 
 ## 📋 Quick Navigation
 
@@ -20,9 +20,8 @@ A production-ready microservices architecture with authentication, user manageme
 - [Examples](#examples) - Code snippets
 
 ### For DevOps/Deployment
-- [Environment Variables](#environment-variables) - Production config
-- [Docker Deployment](#docker-deployment) - Containerization
-- [Database Setup](#database-setup) - MongoDB initialization
+- [Environment Variables](#environment-variables) - Development config
+- [Troubleshooting](#troubleshooting) - Common issues
 
 ---
 
@@ -130,7 +129,6 @@ A production-ready microservices architecture with authentication, user manageme
 ### Optional but Recommended
 - **IntelliJ IDEA** (IDE)
 - **Postman** or **Insomnia** (API testing)
-- **Docker** (containerization)
 - **DBeaver** (MongoDB UI)
 
 ---
@@ -143,69 +141,8 @@ git clone https://github.com/zakaria-beny/MedConnect.git
 cd MedConnect-backend-microservices
 ```
 
-### Step 2: Install MongoDB
 
-**Windows (Chocolatey)**:
-```bash
-choco install mongodb-community
-# Start service
-net start MongoDB
-```
-
-**macOS (Homebrew)**:
-```bash
-brew tap mongodb/brew
-brew install mongodb-community
-brew services start mongodb-community
-```
-
-**Linux (Ubuntu)**:
-```bash
-sudo apt-get install -y mongodb
-sudo systemctl start mongodb
-```
-
-**Verify**:
-```bash
-mongosh
-# Should open MongoDB shell - type: exit
-```
-
-### Step 3: Install Kafka
-
-**Download** from [kafka.apache.org](https://kafka.apache.org/downloads) and extract.
-
-**Windows**:
-```bash
-cd C:\kafka
-
-# Terminal 1: Start Zookeeper
-.\bin\windows\zookeeper-server-start.bat .\config\zookeeper.properties
-
-# Wait 5 seconds, then Terminal 2: Start Kafka
-.\bin\windows\kafka-server-start.bat .\config\server.properties
-
-# Terminal 3: Verify (create topics)
-.\bin\windows\kafka-topics.bat --create --topic test --bootstrap-server localhost:9092
-.\bin\windows\kafka-topics.bat --list --bootstrap-server localhost:9092
-```
-
-**macOS/Linux**:
-```bash
-cd ~/kafka
-
-# Terminal 1
-./bin/zookeeper-server-start.sh ./config/zookeeper.properties
-
-# Terminal 2
-./bin/kafka-server-start.sh ./config/server.properties
-
-# Terminal 3
-./bin/kafka-topics.sh --create --topic test --bootstrap-server localhost:9092
-./bin/kafka-topics.sh --list --bootstrap-server localhost:9092
-```
-
-### Step 4: Setup Environment Variables
+### Step 2: Setup Environment Variables
 
 Create `.env` file in project root:
 
@@ -256,96 +193,26 @@ GATEWAY_CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
 mvn clean install
 
 # Expected: BUILD SUCCESS
-```
-
-### Step 6: Database Initialization
-
-```bash
-mongosh
-
-use medconnect
-
-# Create collections
-db.createCollection("users")
-db.createCollection("sessions")
-db.createCollection("mfa_settings")
-db.createCollection("subscription")
-db.createCollection("subscription_plans")
-db.createCollection("bulk_imports")
-db.createCollection("clinic_accounts")
-db.createCollection("patient_profiles")
-db.createCollection("doctor_profiles")
-db.createCollection("pharmacist_profiles")
-db.createCollection("refresh_tokens")
-db.createCollection("login_attempts")
-
-# Create indexes
-db.users.createIndex({ "email": 1 }, { unique: true })
-db.users.createIndex({ "userRole": 1 })
-db.sessions.createIndex({ "userId": 1 })
-db.doctor_profiles.createIndex({ "specialty": 1 })
-db.doctor_profiles.createIndex({ "city": 1 })
-
-# Exit
-exit
-```
-
-### Step 7: Create Kafka Topics
-
-```bash
-cd ~/kafka  # or C:\kafka
-
-# Create topics
-./bin/kafka-topics.sh --create --topic user.created --bootstrap-server localhost:9092
-./bin/kafka-topics.sh --create --topic user.login --bootstrap-server localhost:9092
-./bin/kafka-topics.sh --create --topic subscription.upgraded --bootstrap-server localhost:9092
-./bin/kafka-topics.sh --create --topic auth.failed --bootstrap-server localhost:9092
-# ... (see list below)
-```
-
-
----
-
-## 🚀 Run Locally
-
 ### Start Services (In This Order)
+ 1: Discovery Service (Eureka)**
 
-**Terminal 1: Discovery Service (Eureka)**
-```bash
-cd discovery-service
-mvn spring-boot:run
-# Wait for: DiscoveryServiceApplication ... started
-# Then visit: http://localhost:8761
-```
 
-**Terminal 2: User Service**
-```bash
-cd user-service
-mvn spring-boot:run
+ 2: User Service**
+
 # Should see: UserServiceApplication ... started on port 8081
 #            Registered with Eureka
 ```
 
-**Terminal 3: API Gateway**
-```bash
-cd api-gateway
-mvn spring-boot:run
+3: API Gateway**
+
 # Should see: GatewayApplication ... started on port 8080
 ```
 
 ### Verify Services Are Running
 
-```bash
+
 # Check Eureka dashboard
-curl http://localhost:8761
-
-# Check Gateway health
-curl http://localhost:8080/actuator/health
-
-# Check User Service
-curl http://localhost:8081/actuator/health
-
-# Or use browser:
+ use browser:
 # Eureka: http://localhost:8761
 # Swagger API Docs: http://localhost:8080/swagger-ui.html
 ```
@@ -431,7 +298,6 @@ mvn clean test jacoco:report
 
 **Backend URL**: 
 - Development: `http://localhost:8080`
-- Production: `https://api.medconnect.fr` (TBD)
 
 **CORS**: Currently allows `http://localhost:3000` and `http://localhost:3001`
 
@@ -620,119 +486,7 @@ KAFKA_BOOTSTRAP_SERVERS=localhost:9092
 GATEWAY_CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
 ```
 
-### Production (Set as system environment variables)
 
-```bash
-# Use strong, random values
-export JWT_SECRET=$(openssl rand -base64 32)
-export MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/medconnect
-export STRIPE_SECRET_KEY=sk_live_xxxxx
-export MAIL_PASSWORD=app-specific-password
-export KAFKA_BOOTSTRAP_SERVERS=kafka-prod.medconnect.fr:9092
-export GATEWAY_CORS_ALLOWED_ORIGINS=https://app.medconnect.fr
-```
-
----
-
-## 📦 Docker Deployment
-
-### Build Docker Image
-
-```dockerfile
-# Dockerfile (for user-service)
-FROM openjdk:17-slim
-WORKDIR /app
-COPY target/user-service-1.0.jar app.jar
-EXPOSE 8081
-ENTRYPOINT ["java", "-jar", "app.jar"]
-```
-
-```bash
-# Build
-cd user-service
-mvn clean package -DskipTests
-docker build -t medconnect-user-service:1.0 .
-
-# Run
-docker run -p 8081:8081 \
-  -e MONGODB_URI=mongodb://mongo:27017/medconnect \
-  -e JWT_SECRET=xxxx \
-  -e MAIL_USERNAME=xxx \
-  -e MAIL_PASSWORD=xxx \
-  medconnect-user-service:1.0
-```
-
-### Docker Compose (All Services)
-
-```yaml
-# docker-compose.yml
-version: '3.8'
-
-services:
-  mongodb:
-    image: mongo:5.0
-    ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_DATABASE: medconnect
-
-  kafka:
-    image: confluentinc/cp-kafka:7.5.0
-    ports:
-      - "9092:9092"
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.5.0
-    ports:
-      - "2181:2181"
-
-  discovery-service:
-    build:
-      context: ./discovery-service
-    ports:
-      - "8761:8761"
-
-  user-service:
-    build:
-      context: ./user-service
-    ports:
-      - "8081:8081"
-    environment:
-      MONGODB_URI: mongodb://mongodb:27017/medconnect
-      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      JWT_SECRET: ${JWT_SECRET}
-      EUREKA_SERVER_URL: http://discovery-service:8761/eureka/
-    depends_on:
-      - mongodb
-      - kafka
-      - discovery-service
-
-  api-gateway:
-    build:
-      context: ./api-gateway
-    ports:
-      - "8080:8080"
-    environment:
-      EUREKA_SERVER_URL: http://discovery-service:8761/eureka/
-    depends_on:
-      - discovery-service
-```
-
-```bash
-# Run all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop all
-docker-compose down
-```
-
----
 
 ## 🐛 Troubleshooting
 
@@ -796,30 +550,21 @@ MedConnect-backend-microservices/
 |---------|----------|
 | [Prerequisites](#prerequisites) + [Backend Setup](#backend-setup) | Backend developers |
 | [Frontend Integration](#frontend-integration) + [API Endpoints](#api-endpoints) | Oumaima (frontend dev) |
-| [Environment Variables](#environment-variables) + [Docker Deployment](#docker-deployment) | DevOps engineers |
+| [Environment Variables](#environment-variables) + [Troubleshooting](#troubleshooting) | DevOps engineers |
 
 ### Links
 - **Eureka Dashboard**: http://localhost:8761
 - **API Swagger**: http://localhost:8080/swagger-ui.html
 - **GitHub**: https://github.com/zakaria-beny/MedConnect
-- **Support**: api-support@medconnect.fr
+- **support : hhhhhhhh makaynch
 
 ### Team
 - **Backend Lead**: Zakaria Beny
-- **Frontend Dev**: Oumaima 👩‍💻
-- **DevOps**: TBD
+- **Frontend Dev**: Oumaima 
 
----
 
-## ✨ What's Next?
-
-- ✅ MS-01 & MS-02: 100% Complete
-- ⏳ MS-09: Audit & Compliance (coming soon)
-- 🎨 Frontend integration (see `FRONTEND_API_GUIDE.md`)
-- 🚀 Production deployment
 
 ---
 
 **Last Updated**: 2026-05-06  
 **Version**: 1.0.0  
-**Status**: ✅ Production Ready
