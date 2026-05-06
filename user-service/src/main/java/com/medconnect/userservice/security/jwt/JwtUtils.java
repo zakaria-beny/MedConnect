@@ -6,6 +6,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
@@ -40,16 +41,25 @@ public class JwtUtils {
 
 
     public String generateTokenFromEmailAndRoles(String email, List<String> roles) {
+        return generateTokenFromEmailAndRoles(email, roles, null);
+    }
+
+    public String generateTokenFromEmailAndRoles(String email, List<String> roles, String sessionId) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
 
-        return Jwts.builder()
+        JwtBuilder builder = Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .addClaims(Map.of("roles", roles))
-                .signWith(key(), SignatureAlgorithm.HS256)
-                .compact();
+                .signWith(key(), SignatureAlgorithm.HS256);
+
+        if (StringUtils.hasText(sessionId)) {
+            builder.setId(sessionId);
+        }
+
+        return builder.compact();
     }
 
 
@@ -62,6 +72,11 @@ public class JwtUtils {
     public String getUserNameFromJwtToken(String token) {
         return Jwts.parserBuilder().setSigningKey(key()).build()
                 .parseClaimsJws(token).getBody().getSubject();
+    }
+
+    public String getSessionIdFromJwtToken(String token) {
+        return Jwts.parserBuilder().setSigningKey(key()).build()
+                .parseClaimsJws(token).getBody().getId();
     }
 
     public boolean validateJwtToken(String token) {

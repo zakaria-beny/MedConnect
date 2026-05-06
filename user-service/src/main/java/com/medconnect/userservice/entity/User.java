@@ -31,6 +31,9 @@ public class User {
     @Indexed(unique = true)
     private String email;
 
+    @Indexed
+    private String createdByUserId;
+
     @NotBlank
     @Size(min = 6, message = "Le mot de passe doit contenir au moins 6 caractères")
     @JsonIgnore

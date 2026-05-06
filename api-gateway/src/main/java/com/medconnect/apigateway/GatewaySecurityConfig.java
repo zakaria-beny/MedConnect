@@ -28,19 +28,10 @@ public class GatewaySecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOriginPatterns(List.of(
             "http://localhost:*",
-            "http://127.0.0.1:*",
-            "http://10.*.*.*:*",
-            "http://192.168.*.*:*",
-            "http://172.16.*.*:*",
-            "http://172.17.*.*:*",
-            "http://172.18.*.*:*",
-            "http://172.19.*.*:*",
-            "http://172.2?.*.*:*",
-            "http://172.30.*.*:*",
-            "http://172.31.*.*:*"
+            "http://127.0.0.1:*"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
         config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

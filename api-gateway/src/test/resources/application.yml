@@ -1,0 +1,6 @@
+medconnect:
+  security:
+    jwt-secret: test-secret-key-for-tests-which-is-at-least-32-bytes-long-123
+eureka:
+  client:
+    enabled: false
