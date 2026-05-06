@@ -1,4 +1,4 @@
-package com.medconnect.discveryservice;
+package com.medconnect.discoveryservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,10 +6,10 @@ import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
 
 @SpringBootApplication
 @EnableEurekaServer
-public class DiscveryServiceApplication {
+public class DiscoveryServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(DiscveryServiceApplication.class, args);
+        SpringApplication.run(DiscoveryServiceApplication.class, args);
     }
 
 }

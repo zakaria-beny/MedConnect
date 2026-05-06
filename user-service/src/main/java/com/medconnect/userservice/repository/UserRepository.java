@@ -9,5 +9,6 @@ public interface UserRepository extends MongoRepository<User, String> {
     Optional<User> findByEmail(String email);
     Optional<User> findByGoogleSub(String googleSub);
     boolean existsByEmail(String email);
+    long countByCreatedByUserId(String createdByUserId);
 
 }

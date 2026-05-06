@@ -89,4 +89,10 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}/suspend")
+    public ResponseEntity<UserResponse> suspendUser(@PathVariable String id) {
+        User suspendedUser = userService.suspendUser(id);
+        return ResponseEntity.ok(userMapper.toDto(suspendedUser));
+    }
 }

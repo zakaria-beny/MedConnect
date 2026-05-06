@@ -2,12 +2,12 @@ package com.medconnect.userservice.security;
 
 import com.medconnect.userservice.security.jwt.AuthEntryPointJwt;
 import com.medconnect.userservice.security.jwt.AuthTokenFilter;
+import com.medconnect.userservice.security.jwt.JwtUtils;
+import com.medconnect.userservice.security.session.AuthSessionService;
 import com.medconnect.userservice.security.services.UserDetailsServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,10 +21,20 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 public class WebSecurityConfig {
 
-    @Autowired private AuthEntryPointJwt unauthorizedHandler;
+    private final AuthEntryPointJwt unauthorizedHandler;
+
+    public WebSecurityConfig(AuthEntryPointJwt unauthorizedHandler) {
+        this.unauthorizedHandler = unauthorizedHandler;
+    }
 
     @Bean
-    public AuthTokenFilter authenticationJwtTokenFilter() { return new AuthTokenFilter(); }
+    public AuthTokenFilter authenticationJwtTokenFilter(
+            JwtUtils jwtUtils,
+            UserDetailsServiceImpl userDetailsService,
+            AuthSessionService authSessionService
+    ) {
+        return new AuthTokenFilter(jwtUtils, userDetailsService, authSessionService);
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
@@ -35,11 +45,37 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, AuthTokenFilter authTokenFilter) throws Exception {
         http.csrf(csrf -> csrf.disable())
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(
+                                "/api/auth/signup",
+                                "/api/auth/register",
+                                "/api/auth/verify-email",
+                                "/api/auth/resend-otp",
+                                "/api/auth/signin",
+                                "/api/auth/login",
+                                "/api/auth/verify-login",
+                                "/api/auth/forgot-password",
+                                "/api/auth/reset-password",
+                                "/api/auth/google",
+                                "/api/auth/refresh"
+                        ).permitAll()
+                        .requestMatchers("/api/auth/logout", "/api/auth/sessions/**", "/api/auth/mfa/**").authenticated()
+                        .requestMatchers(
+                                "/api/users/me",
+                                "/api/users/patients/**",
+                                "/api/users/doctors",
+                                "/api/users/doctors/search",
+                                "/api/users/pharmacists",
+                                "/api/users/search",
+                                "/api/users/*/subscription",
+                                "/api/users/batch-import/**",
+                                "/api/users/*/clinics",
+                                "/api/users/clinics/**"
+                        ).authenticated()
                         .requestMatchers(
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
@@ -49,14 +85,12 @@ public class WebSecurityConfig {
                         ).permitAll()
                         .requestMatchers("/actuator/**").permitAll()
 
-                        .requestMatchers("/api/users/me").authenticated()
-
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
 
                         .anyRequest().authenticated()
                 );
 
-        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
