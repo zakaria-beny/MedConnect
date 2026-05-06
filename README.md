@@ -14,7 +14,7 @@ A production-ready microservices architecture with authentication, user manageme
 - [Run Locally](#run-locally) - Start all 3 services
 - [Testing](#testing) - Run tests
 
-### For Frontend Developers
+### For Frontend Developers (Oumaima 👩‍💻)
 - [Frontend Integration](#frontend-integration) - How to connect frontend
 - [API Reference](#api-endpoints---quick-reference) - All 30 endpoints
 - [Examples](#examples) - Code snippets
@@ -578,9 +578,9 @@ const doctors = await api.get('/api/users/doctors/search', {
 
 ### Frontend Documentation
 
-**See these files for complete integration guides:**
-1. **`FRONTEND_API_GUIDE.md`** - All 30 endpoints with examples
-2. **`FRONTEND_QUICK_START.md`** - Setup guide & code snippets
+**See sections below for:**
+1. **[API Endpoints](#api-endpoints)** - All 30 endpoints with examples
+2. **[Common Frontend Flows](#common-frontend-flows)** - Login, profiles, search
 
 ---
 
@@ -783,9 +783,7 @@ MedConnect-backend-microservices/
 │   └── pom.xml
 │
 ├── pom.xml                          # Parent POM
-├── README.md                        # This file
-├── FRONTEND_API_GUIDE.md            # 30 endpoints (frontend)
-├── FRONTEND_QUICK_START.md          # Setup guide (frontend)
+├── README.md                        # This file (everything in one place)
 └── SERVICE-BREAKDOWN.md             # Feature breakdown
 ```
 
@@ -793,24 +791,23 @@ MedConnect-backend-microservices/
 
 ## 📞 Support & Resources
 
-### Documentation Files
-| File | Purpose |
-|------|---------|
-| `README.md` | This file - Setup for all developers |
-| `FRONTEND_API_GUIDE.md` | 30 endpoints with examples (frontend) |
-| `FRONTEND_QUICK_START.md` | Frontend setup guide (frontend) |
-| `SERVICE-BREAKDOWN.md` | Feature breakdown & requirements |
+### Documentation
+| Section | For Whom |
+|---------|----------|
+| [Prerequisites](#prerequisites) + [Backend Setup](#backend-setup) | Backend developers |
+| [Frontend Integration](#frontend-integration) + [API Endpoints](#api-endpoints) | Oumaima (frontend dev) |
+| [Environment Variables](#environment-variables) + [Docker Deployment](#docker-deployment) | DevOps engineers |
 
 ### Links
 - **Eureka Dashboard**: http://localhost:8761
 - **API Swagger**: http://localhost:8080/swagger-ui.html
 - **GitHub**: https://github.com/zakaria-beny/MedConnect
-- **Email Support**: api-support@medconnect.fr
+- **Support**: api-support@medconnect.fr
 
-### Key Team Members
-- **Backend**: Zakaria Beny
+### Team
+- **Backend Lead**: Zakaria Beny
+- **Frontend Dev**: Oumaima 👩‍💻
 - **DevOps**: TBD
-- **Frontend**: TBD
 
 ---
 
