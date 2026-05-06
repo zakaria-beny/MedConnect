@@ -363,6 +363,19 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "Session revoked."));
     }
 
+    @PostMapping("/logout-all-devices")
+    public ResponseEntity<?> logoutAllDevices(Authentication authentication) {
+        User user = getAuthenticatedUser(authentication);
+        int sessionsRevoked = authSessionService.revokeAllSessionsForUser(user.getId());
+        refreshTokenService.revokeByUserId(user.getId());
+        authEventPublisher.publishUserLogout(user.getId(), user.getEmail(), "all_devices");
+        return ResponseEntity.ok(Map.of(
+                "message", "All sessions revoked",
+                "sessionsRevoked", sessionsRevoked
+        ));
+    }
+
+
     @PostMapping("/mfa/setup")
     public ResponseEntity<?> setupMfa(Authentication authentication, @Valid @RequestBody MfaSetupRequest request) {
         User user = getAuthenticatedUser(authentication);

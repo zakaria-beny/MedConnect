@@ -103,6 +103,19 @@ public class RefreshTokenService {
         refreshTokenRepository.saveAll(tokens);
     }
 
+    public void revokeByUserId(String userId) {
+        if (!StringUtils.hasText(userId)) {
+            return;
+        }
+        List<RefreshTokenRecord> tokens = refreshTokenRepository.findByUserIdAndRevokedFalse(userId);
+        if (tokens.isEmpty()) {
+            return;
+        }
+        tokens.forEach(token -> token.setRevoked(true));
+        refreshTokenRepository.saveAll(tokens);
+    }
+
+
     private static String generateRawToken() {
         return UUID.randomUUID().toString().replace("-", "") + UUID.randomUUID().toString().replace("-", "");
     }
