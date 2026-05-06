@@ -79,6 +79,14 @@ public class AuthSessionService {
         return true;
     }
 
+    public int revokeAllSessionsForUser(String userId) {
+        List<AuthSession> activeSessions = authSessionRepository.findByUserIdAndRevokedFalseOrderByCreatedAtDesc(userId);
+        activeSessions.forEach(session -> session.setRevoked(true));
+        authSessionRepository.saveAll(activeSessions);
+        return activeSessions.size();
+    }
+
+
     private static String extractClientIp(HttpServletRequest request) {
         if (request == null) {
             return null;
