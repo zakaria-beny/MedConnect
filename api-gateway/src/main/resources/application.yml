@@ -37,6 +37,11 @@ spring:
           predicates:
             - Path=/api/users/**,/api/auth/**
 
+        - id: dmp-service
+          uri: lb://dmp-service
+          predicates:
+            - Path=/api/dmp/**
+
       # ✅ CORS (Web + Mobile)
       globalcors:
         add-to-simple-url-handler-mapping: true
@@ -53,7 +58,7 @@ spring:
 # ✅ Your custom config
 medconnect:
   security:
-    jwt-secret: ${JWT_SECRET}
+    jwt-secret: ${JWT_SECRET:medconnect-super-secret-key-that-is-at-least-32-chars-long}
 
 eureka:
   client:

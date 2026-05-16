@@ -100,7 +100,7 @@ public class AuthController {
         user.setMotDePasse(encoder.encode(req.getPassword()));
         user.setRoles(List.of("ROLE_USER"));
         user.setProvider(Provider.LOCAL);
-        user.setEnabled(false); // enabled after email verification
+        user.setEnabled(false);
 
         userRepository.save(user);
 
@@ -141,7 +141,6 @@ public class AuthController {
         }
         User user = userRepository.findByEmail(email).orElse(null);
         if (user == null) {
-            // Return generic message to avoid user enumeration
             return ResponseEntity.ok(Map.of("message", "If that email exists, an OTP was sent."));
         }
         if (user.isEnabled()) {
@@ -176,7 +175,6 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Email not verified. Please check your inbox.");
         }
 
-        // Google accounts should use /api/auth/google
         if (user.getProvider() != Provider.LOCAL) {
             authEventPublisher.publishAuthFailed(req.getEmail(), "invalid_provider");
             return ResponseEntity.badRequest().body("Please sign in with Google.");
@@ -231,7 +229,6 @@ public class AuthController {
             String code = otpService.generateAndSave(req.getEmail(), OtpType.PASSWORD_RESET);
             emailService.sendOtp(req.getEmail(), OtpType.PASSWORD_RESET, code);
         }
-        // Always return the same response to avoid user enumeration
         return ResponseEntity.ok(Map.of("message", "If that email exists, an OTP was sent."));
     }
 
@@ -251,7 +248,7 @@ public class AuthController {
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // Google OAuth (no OTP step)
+    // Google OAuth
     // ──────────────────────────────────────────────────────────────────────────
 
     @PostMapping("/google")
@@ -375,7 +372,6 @@ public class AuthController {
         ));
     }
 
-
     @PostMapping("/mfa/setup")
     public ResponseEntity<?> setupMfa(Authentication authentication, @Valid @RequestBody MfaSetupRequest request) {
         User user = getAuthenticatedUser(authentication);
@@ -402,6 +398,10 @@ public class AuthController {
         authEventPublisher.publishMfaVerified(user.getId(), user.getEmail(), method.name());
         return ResponseEntity.ok(response);
     }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Helpers
+    // ──────────────────────────────────────────────────────────────────────────
 
     private ResponseEntity<?> blockedAttemptResponse(LoginAttemptService.AttemptDecision decision) {
         HttpStatus status = decision.getState() == LoginAttemptService.AttemptState.LOCKED

@@ -1,5 +1,7 @@
 package com.medconnect.userservice.security.events;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -10,6 +12,8 @@ import java.util.Map;
 
 @Component
 public class AuthEventPublisher {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthEventPublisher.class);
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
@@ -72,6 +76,15 @@ public class AuthEventPublisher {
         event.put("details", details);
 
         String key = userId != null ? userId : email;
-        kafkaTemplate.send(topic, key, event);
+
+        // FIX: Kafka events are for observability only — they must NEVER crash a user-facing flow.
+        // If Kafka is down (e.g. localhost:9092 not running), KafkaTemplate.send() throws
+        // KafkaException("Send failed") which was propagating to GlobalExceptionHandler
+        // and returning {"error":"Send failed"} to the client, breaking login entirely.
+        try {
+            kafkaTemplate.send(topic, key, event);
+        } catch (Exception e) {
+            log.warn("Failed to publish Kafka event [{}] for {}: {}", eventType, email, e.getMessage());
+        }
     }
 }
