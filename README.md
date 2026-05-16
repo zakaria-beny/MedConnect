@@ -41,6 +41,7 @@ A complete Spring Boot microservices architecture with authentication, user mana
 
 ### MS-02: User Management ✅
 - ✅ Patient/Doctor/Pharmacist profile management
+- ✅ Moroccan professional verification workflow (doctor/pharmacist)
 - ✅ Subscription plans (BASIC/PREMIUM/ENTERPRISE)
 - ✅ Plan-based limits (200/1000/10000 patients)
 - ✅ Bulk CSV import with validation
@@ -233,6 +234,20 @@ curl -X POST http://localhost:8080/api/auth/signup \
 # Response: { "message": "Signup successful", "userId": "..." }
 ```
 
+### Quick Test - Browser UI (API Tester)
+
+When `api-gateway` is running, open:
+
+```
+http://localhost:8080/
+```
+
+What you can do in the built-in tester:
+- Load presets for Auth, Users, and DMP endpoints
+- Paste your JWT token once, then call protected endpoints
+- Edit method/path/query/body and send requests directly
+- See formatted response + a generated `curl` command
+
 ---
 
 ## 🧪 Testing
@@ -281,7 +296,16 @@ mvn clean test jacoco:report
 | POST | `/api/users/patients` | Create patient profile |
 | GET | `/api/users/patients/{userId}` | Get patient |
 | POST | `/api/users/doctors` | Create doctor profile |
+| GET | `/api/users/doctors/{userId}` | Get doctor profile |
 | GET | `/api/users/doctors/search` | Search doctors |
+| PUT | `/api/users/doctors/{userId}/verification` | Admin verify/reject doctor |
+| POST | `/api/users/pharmacists` | Create pharmacist profile |
+| GET | `/api/users/pharmacists/{userId}` | Get pharmacist profile |
+| PUT | `/api/users/pharmacists/{userId}/verification` | Admin verify/reject pharmacist |
+| POST | `/api/users/professional-documents/upload` | Upload doctor/pharmacist proof file |
+| GET | `/api/users/professional-documents/user/{userId}` | List stored proof docs |
+| GET | `/api/users/professional-documents/{documentId}/download` | Download proof file (signed link) |
+| GET | `/api/users/professional-documents/audit/{userId}` | Admin audit history (immutable) |
 | POST | `/api/users/{userId}/subscription` | Get subscription |
 | PUT | `/api/users/{userId}/subscription` | Upgrade/downgrade |
 | POST | `/api/users/batch-import` | Bulk import users |

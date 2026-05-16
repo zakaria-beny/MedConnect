@@ -3,6 +3,7 @@ package com.medconnect.userservice.otp;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -92,6 +93,10 @@ public class EmailService {
             mailSender.send(message);
         } catch (MessagingException e) {
             throw new RuntimeException(errorMessage, e);
+        } catch (MailException e) {
+            // FIX: mailSender.send() throws MailSendException (extends MailException, NOT MessagingException).
+            // The old catch block never caught this, causing SMTP errors to crash login.
+            throw new RuntimeException(errorMessage + " — " + e.getMostSpecificCause().getMessage(), e);
         }
     }
 }

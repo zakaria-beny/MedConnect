@@ -102,8 +102,8 @@ Email service (password reset)
 ✅ Session management
 ✅ Account lockout (5 failed attempts)
 ✅ Rate limiting (5 login attempts per 15 min)
-✅ CPS Card support (French doctor ID)
-✅ eIDAS digital certificates
+✅ Moroccan professional card/license verification (doctor/pharmacist)
+✅ National ID + registration number proof documents
 
 ---
 
@@ -168,7 +168,12 @@ UserManagementController
   GET    /api/users/patients/{userId}
   PUT    /api/users/patients/{userId}
   POST   /api/users/doctors
+  GET    /api/users/doctors/{userId}
   GET    /api/users/doctors/search?specialty=Cardiology&language=French
+  POST   /api/users/pharmacists
+  GET    /api/users/pharmacists/{userId}
+  PUT    /api/users/doctors/{userId}/verification (admin)
+  PUT    /api/users/pharmacists/{userId}/verification (admin)
   PUT    /api/users/{userId}/subscription
   POST   /api/users/batch-import (CSV upload)
   GET    /api/users/batch-import/{importId}/status
@@ -193,8 +198,8 @@ Email service (invitations, notifications)
 
 ### Key Features:
 ✅ Patient profiles (DOB, blood type, insurance, allergies)
-✅ Doctor profiles (RPPS license, specialty, locations, schedule)
-✅ Pharmacist profiles (FINESS number, hours, delivery)
+✅ Doctor profiles (Moroccan registration number + CIN + specialty)
+✅ Pharmacist profiles (Moroccan registration number + CIN + hours, delivery)
 ✅ Subscription plans (BASIC, PREMIUM, ENTERPRISE)
 ✅ Bulk CSV import with validation
 ✅ Doctor search (specialty, language, location)
