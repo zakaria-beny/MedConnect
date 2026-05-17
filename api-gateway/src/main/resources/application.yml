@@ -42,6 +42,20 @@ spring:
           predicates:
             - Path=/api/dmp/**
 
+        - id: user-service-openapi
+          uri: lb://user-service
+          predicates:
+            - Path=/api-docs/user-service
+          filters:
+            - RewritePath=/api-docs/user-service, /v3/api-docs
+
+        - id: dmp-service-openapi
+          uri: lb://dmp-service
+          predicates:
+            - Path=/api-docs/dmp-service
+          filters:
+            - RewritePath=/api-docs/dmp-service, /v3/api-docs
+
       # ✅ CORS (Web + Mobile)
       globalcors:
         add-to-simple-url-handler-mapping: true
@@ -64,6 +78,19 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+springdoc:
+  swagger-ui:
+    disable-swagger-default-url: true
+    urls:
+      - name: user-service
+        url: /api-docs/user-service
+      - name: dmp-service
+        url: /api-docs/dmp-service
+    urlsPrimaryName: user-service
+
 management:
   endpoints:
     web:

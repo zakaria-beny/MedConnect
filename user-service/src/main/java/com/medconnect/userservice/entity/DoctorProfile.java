@@ -17,11 +17,18 @@ public class DoctorProfile {
     @Indexed(unique = true)
     private String userId;
 
-    private String rppsLicense;
+    private String professionalRegistrationNumber;
+    private String nationalIdNumber;
+    private String registrationAuthority;
     private String specialty;
     private List<String> languages;
     private String city;
     private String clinicName;
+    private String cardFrontImageUrl;
+    private String cardBackImageUrl;
+    private ProfessionalVerificationStatus verificationStatus;
+    private String verificationNote;
+    private LocalDateTime verifiedAt;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
