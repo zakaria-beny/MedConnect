@@ -12,8 +12,12 @@ import com.medconnect.userservice.entity.DoctorProfile;
 import com.medconnect.userservice.entity.PatientProfile;
 import com.medconnect.userservice.entity.PharmacistProfile;
 import com.medconnect.userservice.entity.PlanType;
+import com.medconnect.userservice.entity.ProfessionalDocumentSide;
+import com.medconnect.userservice.entity.ProfessionalProfileType;
+import com.medconnect.userservice.entity.ProfessionalVerificationStatus;
 import com.medconnect.userservice.entity.Subscription;
 import com.medconnect.userservice.entity.SubscriptionStatus;
+import com.medconnect.userservice.entity.User;
 import com.medconnect.userservice.repository.DoctorProfileRepository;
 import com.medconnect.userservice.repository.PatientProfileRepository;
 import com.medconnect.userservice.repository.PharmacistProfileRepository;
@@ -23,7 +27,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 @Service
 public class UserManagementService {
@@ -36,6 +44,9 @@ public class UserManagementService {
     private final UserManagementEventPublisher eventPublisher;
     private final SubscriptionPlanPolicyService subscriptionPlanPolicyService;
     private final SubscriptionPaymentService subscriptionPaymentService;
+    private final ProfessionalDocumentService professionalDocumentService;
+    private final ProfessionalVerificationAuditService professionalVerificationAuditService;
+    private static final Pattern CIN_PATTERN = Pattern.compile("^[A-Za-z0-9]{5,20}$");
 
     public UserManagementService(
             UserRepository userRepository,
@@ -45,7 +56,9 @@ public class UserManagementService {
             SubscriptionRepository subscriptionRepository,
             UserManagementEventPublisher eventPublisher,
             SubscriptionPlanPolicyService subscriptionPlanPolicyService,
-            SubscriptionPaymentService subscriptionPaymentService
+            SubscriptionPaymentService subscriptionPaymentService,
+            ProfessionalDocumentService professionalDocumentService,
+            ProfessionalVerificationAuditService professionalVerificationAuditService
     ) {
         this.userRepository = userRepository;
         this.patientProfileRepository = patientProfileRepository;
@@ -55,6 +68,8 @@ public class UserManagementService {
         this.eventPublisher = eventPublisher;
         this.subscriptionPlanPolicyService = subscriptionPlanPolicyService;
         this.subscriptionPaymentService = subscriptionPaymentService;
+        this.professionalDocumentService = professionalDocumentService;
+        this.professionalVerificationAuditService = professionalVerificationAuditService;
     }
 
     public PatientProfileResponse createPatientProfile(PatientProfileRequest request) {
@@ -94,14 +109,24 @@ public class UserManagementService {
         if (doctorProfileRepository.findByUserId(request.getUserId()).isPresent()) {
             throw new RuntimeException("Doctor profile already exists for user.");
         }
+        validateNationalId(request.getNationalIdNumber());
+        requireText(request.getProfessionalRegistrationNumber(), "professionalRegistrationNumber is required.");
+        requireText(request.getRegistrationAuthority(), "registrationAuthority is required.");
 
         DoctorProfile profile = new DoctorProfile();
         profile.setUserId(request.getUserId());
-        profile.setRppsLicense(request.getRppsLicense());
+        profile.setProfessionalRegistrationNumber(request.getProfessionalRegistrationNumber());
+        profile.setNationalIdNumber(request.getNationalIdNumber());
+        profile.setRegistrationAuthority(request.getRegistrationAuthority());
         profile.setSpecialty(request.getSpecialty());
         profile.setLanguages(request.getLanguages());
         profile.setCity(request.getCity());
         profile.setClinicName(request.getClinicName());
+        profile.setCardFrontImageUrl(request.getCardFrontImageUrl());
+        profile.setCardBackImageUrl(request.getCardBackImageUrl());
+        profile.setVerificationStatus(ProfessionalVerificationStatus.PENDING_VERIFICATION);
+        profile.setVerificationNote(null);
+        profile.setVerifiedAt(null);
         profile.setCreatedAt(LocalDateTime.now());
         profile.setUpdatedAt(LocalDateTime.now());
 
@@ -113,14 +138,24 @@ public class UserManagementService {
         if (pharmacistProfileRepository.findByUserId(request.getUserId()).isPresent()) {
             throw new RuntimeException("Pharmacist profile already exists for user.");
         }
+        validateNationalId(request.getNationalIdNumber());
+        requireText(request.getProfessionalRegistrationNumber(), "professionalRegistrationNumber is required.");
+        requireText(request.getRegistrationAuthority(), "registrationAuthority is required.");
 
         PharmacistProfile profile = new PharmacistProfile();
         profile.setUserId(request.getUserId());
-        profile.setFinessNumber(request.getFinessNumber());
+        profile.setProfessionalRegistrationNumber(request.getProfessionalRegistrationNumber());
+        profile.setNationalIdNumber(request.getNationalIdNumber());
+        profile.setRegistrationAuthority(request.getRegistrationAuthority());
         profile.setPharmacyName(request.getPharmacyName());
         profile.setCity(request.getCity());
         profile.setOpeningHours(request.getOpeningHours());
         profile.setDeliveryAvailable(request.isDeliveryAvailable());
+        profile.setCardFrontImageUrl(request.getCardFrontImageUrl());
+        profile.setCardBackImageUrl(request.getCardBackImageUrl());
+        profile.setVerificationStatus(ProfessionalVerificationStatus.PENDING_VERIFICATION);
+        profile.setVerificationNote(null);
+        profile.setVerifiedAt(null);
         profile.setCreatedAt(LocalDateTime.now());
         profile.setUpdatedAt(LocalDateTime.now());
 
@@ -129,11 +164,90 @@ public class UserManagementService {
 
     public List<DoctorProfileResponse> searchDoctors(String specialty, String language, String city) {
         return doctorProfileRepository.findAll().stream()
+                .filter(profile -> profile.getVerificationStatus() == ProfessionalVerificationStatus.VERIFIED)
                 .filter(profile -> containsIgnoreCase(profile.getSpecialty(), specialty))
                 .filter(profile -> hasLanguage(profile.getLanguages(), language))
                 .filter(profile -> containsIgnoreCase(profile.getCity(), city))
                 .map(this::toResponse)
                 .toList();
+    }
+
+    public DoctorProfileResponse getDoctorProfile(String userId) {
+        DoctorProfile profile = doctorProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Doctor profile not found."));
+        return toResponse(profile);
+    }
+
+    public PharmacistProfileResponse getPharmacistProfile(String userId) {
+        PharmacistProfile profile = pharmacistProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Pharmacist profile not found."));
+        return toResponse(profile);
+    }
+
+    public DoctorProfileResponse updateDoctorVerificationStatus(
+            String userId,
+            ProfessionalVerificationStatus status,
+            String note,
+            String actorUserId
+    ) {
+        DoctorProfile profile = doctorProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Doctor profile not found."));
+        ProfessionalVerificationStatus previousStatus = profile.getVerificationStatus();
+
+        if (status == ProfessionalVerificationStatus.VERIFIED) {
+            validateProfessionalIdentity(profile.getProfessionalRegistrationNumber(), profile.getNationalIdNumber(), profile.getRegistrationAuthority());
+            ensureHasRequiredDocuments(userId, ProfessionalProfileType.DOCTOR);
+        }
+
+        profile.setVerificationStatus(status);
+        profile.setVerificationNote(note);
+        profile.setVerifiedAt(status == ProfessionalVerificationStatus.VERIFIED ? LocalDateTime.now() : null);
+        profile.setUpdatedAt(LocalDateTime.now());
+
+        DoctorProfile saved = doctorProfileRepository.save(profile);
+        syncUserRole(userId, "ROLE_DOCTOR", status == ProfessionalVerificationStatus.VERIFIED);
+        professionalVerificationAuditService.logVerificationStatusChanged(
+                userId,
+                ProfessionalProfileType.DOCTOR,
+                actorUserId,
+                previousStatus,
+                status,
+                note
+        );
+        return toResponse(saved);
+    }
+
+    public PharmacistProfileResponse updatePharmacistVerificationStatus(
+            String userId,
+            ProfessionalVerificationStatus status,
+            String note,
+            String actorUserId
+    ) {
+        PharmacistProfile profile = pharmacistProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Pharmacist profile not found."));
+        ProfessionalVerificationStatus previousStatus = profile.getVerificationStatus();
+
+        if (status == ProfessionalVerificationStatus.VERIFIED) {
+            validateProfessionalIdentity(profile.getProfessionalRegistrationNumber(), profile.getNationalIdNumber(), profile.getRegistrationAuthority());
+            ensureHasRequiredDocuments(userId, ProfessionalProfileType.PHARMACIST);
+        }
+
+        profile.setVerificationStatus(status);
+        profile.setVerificationNote(note);
+        profile.setVerifiedAt(status == ProfessionalVerificationStatus.VERIFIED ? LocalDateTime.now() : null);
+        profile.setUpdatedAt(LocalDateTime.now());
+
+        PharmacistProfile saved = pharmacistProfileRepository.save(profile);
+        syncUserRole(userId, "ROLE_PHARMACIST", status == ProfessionalVerificationStatus.VERIFIED);
+        professionalVerificationAuditService.logVerificationStatusChanged(
+                userId,
+                ProfessionalProfileType.PHARMACIST,
+                actorUserId,
+                previousStatus,
+                status,
+                note
+        );
+        return toResponse(saved);
     }
 
     public SubscriptionResponse updateSubscription(String userId, SubscriptionUpdateRequest request) {
@@ -202,6 +316,53 @@ public class UserManagementService {
         }
     }
 
+    private void ensureHasRequiredDocuments(String userId, ProfessionalProfileType profileType) {
+        boolean hasFront = professionalDocumentService.hasActiveCleanDocument(userId, profileType, ProfessionalDocumentSide.FRONT);
+        boolean hasBack = professionalDocumentService.hasActiveCleanDocument(userId, profileType, ProfessionalDocumentSide.BACK);
+        if (!hasFront || !hasBack) {
+            throw new RuntimeException("Cannot verify profile: both FRONT and BACK proof documents are required and must be malware-scan clean.");
+        }
+    }
+
+    private static void validateProfessionalIdentity(String registrationNumber, String nationalId, String authority) {
+        requireText(registrationNumber, "professionalRegistrationNumber is required for verification.");
+        requireText(authority, "registrationAuthority is required for verification.");
+        validateNationalId(nationalId);
+    }
+
+    private static void validateNationalId(String nationalId) {
+        requireText(nationalId, "nationalIdNumber is required.");
+        if (!CIN_PATTERN.matcher(nationalId.trim()).matches()) {
+            throw new RuntimeException("nationalIdNumber format is invalid.");
+        }
+    }
+
+    private static void requireText(String value, String message) {
+        if (!StringUtils.hasText(value)) {
+            throw new RuntimeException(message);
+        }
+    }
+
+    private void syncUserRole(String userId, String role, boolean shouldHaveRole) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id " + userId));
+
+        List<String> roles = new ArrayList<>(Optional.ofNullable(user.getRoles()).orElseGet(List::of));
+        String normalizedRole = role.toUpperCase(Locale.ROOT);
+        boolean hasRole = roles.stream().anyMatch(existing -> normalizedRole.equalsIgnoreCase(existing));
+
+        if (shouldHaveRole && !hasRole) {
+            roles.add(normalizedRole);
+        } else if (!shouldHaveRole && hasRole) {
+            roles.removeIf(existing -> normalizedRole.equalsIgnoreCase(existing));
+        }
+
+        if (!roles.equals(user.getRoles())) {
+            user.setRoles(roles);
+            userRepository.save(user);
+        }
+    }
+
     private void publishSubscriptionTransition(String userId, PlanType previousPlan, PlanType requestedPlan) {
         if (previousPlan == null || previousPlan == requestedPlan) {
             return;
@@ -247,11 +408,18 @@ public class UserManagementService {
         DoctorProfileResponse response = new DoctorProfileResponse();
         response.setId(profile.getId());
         response.setUserId(profile.getUserId());
-        response.setRppsLicense(profile.getRppsLicense());
+        response.setProfessionalRegistrationNumber(profile.getProfessionalRegistrationNumber());
+        response.setNationalIdNumber(profile.getNationalIdNumber());
+        response.setRegistrationAuthority(profile.getRegistrationAuthority());
         response.setSpecialty(profile.getSpecialty());
         response.setLanguages(profile.getLanguages());
         response.setCity(profile.getCity());
         response.setClinicName(profile.getClinicName());
+        response.setCardFrontImageUrl(profile.getCardFrontImageUrl());
+        response.setCardBackImageUrl(profile.getCardBackImageUrl());
+        response.setVerificationStatus(profile.getVerificationStatus());
+        response.setVerificationNote(profile.getVerificationNote());
+        response.setVerifiedAt(profile.getVerifiedAt());
         return response;
     }
 
@@ -259,11 +427,18 @@ public class UserManagementService {
         PharmacistProfileResponse response = new PharmacistProfileResponse();
         response.setId(profile.getId());
         response.setUserId(profile.getUserId());
-        response.setFinessNumber(profile.getFinessNumber());
+        response.setProfessionalRegistrationNumber(profile.getProfessionalRegistrationNumber());
+        response.setNationalIdNumber(profile.getNationalIdNumber());
+        response.setRegistrationAuthority(profile.getRegistrationAuthority());
         response.setPharmacyName(profile.getPharmacyName());
         response.setCity(profile.getCity());
         response.setOpeningHours(profile.getOpeningHours());
         response.setDeliveryAvailable(profile.isDeliveryAvailable());
+        response.setCardFrontImageUrl(profile.getCardFrontImageUrl());
+        response.setCardBackImageUrl(profile.getCardBackImageUrl());
+        response.setVerificationStatus(profile.getVerificationStatus());
+        response.setVerificationNote(profile.getVerificationNote());
+        response.setVerifiedAt(profile.getVerifiedAt());
         return response;
     }
 
