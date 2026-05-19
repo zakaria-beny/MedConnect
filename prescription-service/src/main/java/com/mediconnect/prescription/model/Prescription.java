@@ -24,21 +24,42 @@ public class Prescription {
     @Id
     private String id;
 
+    // ─── Internal IDs (stored in DB, never shown in PDF) ───
     private String patientId;
     private String doctorId;
-    private String doctorName;
+
+    // ─── Human-readable fields (shown in PDF) ───────────────
+    private String patientFullName;
+    private String patientDateOfBirth;  // dd/MM/yyyy
+    private String doctorFullName;
+    private String doctorSpecialty;
+    private String doctorRppsNumber;    // French doctor license number
+    private String clinicName;
+    private String clinicAddress;
+    private String clinicPhone;
+
     private List<PrescriptionItem> items;
     private PrescriptionStatus status;
+
+    // ─── Signature (internal token, never shown in PDF) ─────
     private String digitalSignature;
+    private String signatureImage; //for drawing signature
     private LocalDateTime signedAt;
+
+    // ─── QR Code ────────────────────────────────────────────
     private String qrCodeBase64;
+
+    // ─── Pharmacy ───────────────────────────────────────────
     private String pharmacyId;
     private LocalDateTime sentToPharmacyAt;
     private LocalDateTime dispensedAt;
     private String dispensedByPharmacistId;
+
+    // ─── Refills ────────────────────────────────────────────
     private int refillsAllowed;
     private int refillsUsed;
     private boolean controlledSubstance;
+
     private String notes;
     private LocalDateTime expiresAt;
 

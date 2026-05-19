@@ -8,10 +8,10 @@
         <groupId>com.medconnect</groupId>
         <artifactId>MedConnect-backend-microservices</artifactId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath>..</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>com.mediconnect</groupId>
+    <groupId>com.medconnect</groupId>
     <artifactId>prescription-service</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
@@ -82,11 +82,30 @@
         </dependency>
 
         <!-- PDF Generation -->
+        <!-- Thymeleaf for HTML templates -->
         <dependency>
-            <groupId>org.apache.pdfbox</groupId>
-            <artifactId>pdfbox</artifactId>
-            <version>2.0.27</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
+
+        <!-- OpenHTMLToPDF for HTML → PDF conversion -->
+        <dependency>
+            <groupId>com.openhtmltopdf</groupId>
+            <artifactId>openhtmltopdf-core</artifactId>
+            <version>1.0.10</version>
+        </dependency>
+        <dependency>
+            <groupId>com.openhtmltopdf</groupId>
+            <artifactId>openhtmltopdf-pdfbox</artifactId>
+            <version>1.0.10</version>
+        </dependency>
+        <dependency>
+            <groupId>com.openhtmltopdf</groupId>
+            <artifactId>openhtmltopdf-svg-support</artifactId>
+            <version>1.0.10</version>
+        </dependency>
+
+        <!-- Remove old pdfbox dependency — openhtmltopdf includes it -->
 
         <!-- Testing -->
         <dependency>

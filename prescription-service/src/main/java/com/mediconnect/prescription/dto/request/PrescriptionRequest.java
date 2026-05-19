@@ -15,15 +15,34 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PrescriptionRequest {
+
+    // ─── Internal IDs ────────────────────────────────────────
     @NotBlank(message = "Patient ID is required")
     private String patientId;
 
     @NotBlank(message = "Doctor ID is required")
     private String doctorId;
 
-    @NotBlank(message = "Doctor name is required")
-    private String doctorName;
+    // ─── Human-readable fields (shown in PDF) ────────────────
+    @NotBlank(message = "Patient full name is required")
+    private String patientFullName;
 
+    private String patientDateOfBirth;
+
+    @NotBlank(message = "Doctor full name is required")
+    private String doctorFullName;
+
+    private String doctorSpecialty;
+
+    private String doctorRppsNumber;
+
+    private String clinicName;
+
+    private String clinicAddress;
+
+    private String clinicPhone;
+
+    // ─── Items ───────────────────────────────────────────────
     @NotEmpty(message = "Prescription items cannot be empty")
     @Valid
     private List<PrescriptionItemRequest> items;

@@ -1,7 +1,6 @@
 package com.mediconnect.prescription.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.mediconnect.prescription.model.Prescription;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,11 +15,35 @@ import java.util.List;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PrescriptionResponse {
+
     private String id;
+
+    // ─── IDs ─────────────────────────────────────────────────
     private String patientId;
     private String doctorId;
-    private String doctorName;
+
+    // ─── Patient info (shown in PDF / UI) ────────────────────
+    private String patientFullName;        // ← was missing
+    private String patientDateOfBirth;     // ← was missing
+
+    // ─── Doctor info ─────────────────────────────────────────
+    private String doctorFullName;         // ← was missing (replaces doctorName)
+    private String doctorSpecialty;        // ← was missing
+    private String doctorRppsNumber;       // ← was missing
+
+    // ─── Clinic info ─────────────────────────────────────────
+    private String clinicName;             // ← was missing
+    private String clinicAddress;          // ← was missing
+    private String clinicPhone;            // ← was missing
+
+    // ─── Prescription content ────────────────────────────────
     private List<PrescriptionItemResponse> items;
+    private String notes;
+    private int refillsAllowed;
+    private int refillsUsed;
+    private boolean controlledSubstance;
+
+    // ─── Status & workflow ───────────────────────────────────
     private String status;
     private String digitalSignature;
     private LocalDateTime signedAt;
@@ -29,10 +52,8 @@ public class PrescriptionResponse {
     private LocalDateTime sentToPharmacyAt;
     private LocalDateTime dispensedAt;
     private String dispensedByPharmacistId;
-    private int refillsAllowed;
-    private int refillsUsed;
-    private boolean controlledSubstance;
-    private String notes;
+
+    // ─── Dates ───────────────────────────────────────────────
     private LocalDateTime expiresAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

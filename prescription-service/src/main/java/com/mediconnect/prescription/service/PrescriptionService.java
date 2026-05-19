@@ -60,7 +60,7 @@ public class PrescriptionService {
 
         prescription.setPatientId(request.getPatientId());
         prescription.setDoctorId(request.getDoctorId());
-        prescription.setDoctorName(request.getDoctorName());
+        prescription.setDoctorFullName(request.getDoctorFullName());
         prescription.setItems(prescriptionMapper.toModel(request).getItems());
         prescription.setNotes(request.getNotes());
         prescription.setRefillsAllowed(request.getRefillsAllowed());

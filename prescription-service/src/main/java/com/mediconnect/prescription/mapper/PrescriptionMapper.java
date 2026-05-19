@@ -22,7 +22,14 @@ public class PrescriptionMapper {
         return Prescription.builder()
                 .patientId(request.getPatientId())
                 .doctorId(request.getDoctorId())
-                .doctorName(request.getDoctorName())
+                .patientFullName(request.getPatientFullName())
+                .patientDateOfBirth(request.getPatientDateOfBirth())
+                .doctorFullName(request.getDoctorFullName())
+                .doctorSpecialty(request.getDoctorSpecialty())
+                .doctorRppsNumber(request.getDoctorRppsNumber())
+                .clinicName(request.getClinicName())
+                .clinicAddress(request.getClinicAddress())
+                .clinicPhone(request.getClinicPhone())
                 .items(items)
                 .notes(request.getNotes())
                 .refillsAllowed(request.getRefillsAllowed())
@@ -54,10 +61,16 @@ public class PrescriptionMapper {
                 .id(model.getId())
                 .patientId(model.getPatientId())
                 .doctorId(model.getDoctorId())
-                .doctorName(model.getDoctorName())
+                .patientFullName(model.getPatientFullName())
+                .patientDateOfBirth(model.getPatientDateOfBirth())
+                .doctorFullName(model.getDoctorFullName())
+                .doctorSpecialty(model.getDoctorSpecialty())
+                .doctorRppsNumber(model.getDoctorRppsNumber())
+                .clinicName(model.getClinicName())
+                .clinicAddress(model.getClinicAddress())
+                .clinicPhone(model.getClinicPhone())
                 .items(items)
                 .status(model.getStatus() != null ? model.getStatus().name() : null)
-                .digitalSignature(model.getDigitalSignature())
                 .signedAt(model.getSignedAt())
                 .qrCodeBase64(model.getQrCodeBase64())
                 .pharmacyId(model.getPharmacyId())
@@ -92,5 +105,27 @@ public class PrescriptionMapper {
         return models.stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    public void updateFromRequest(Prescription existing, PrescriptionRequest request) {
+        existing.setPatientId(request.getPatientId());
+        existing.setDoctorId(request.getDoctorId());
+        existing.setPatientFullName(request.getPatientFullName());
+        existing.setPatientDateOfBirth(request.getPatientDateOfBirth());
+        existing.setDoctorFullName(request.getDoctorFullName());
+        existing.setDoctorSpecialty(request.getDoctorSpecialty());
+        existing.setDoctorRppsNumber(request.getDoctorRppsNumber());
+        existing.setClinicName(request.getClinicName());
+        existing.setClinicAddress(request.getClinicAddress());
+        existing.setClinicPhone(request.getClinicPhone());
+        existing.setNotes(request.getNotes());
+        existing.setRefillsAllowed(request.getRefillsAllowed());
+        existing.setControlledSubstance(request.isControlledSubstance());
+
+        List<Prescription.PrescriptionItem> items = request.getItems()
+                .stream()
+                .map(this::toModel)
+                .collect(Collectors.toList());
+        existing.setItems(items);
     }
 }

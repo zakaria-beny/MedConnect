@@ -15,4 +15,5 @@ public class SignRequest {
     private String doctorId;
 
     private String certificate;
+    private String signatureImage;
 }
