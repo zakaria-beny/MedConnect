@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8"/>
+    <style>
+        @page { size: A4; margin: 0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 10.5pt;
+            color: #111;
+            background: #fff;
+            padding: 12mm 16mm 10mm 16mm;
+            width: 210mm;
+            min-height: 297mm;
+        }
+
+        /* ═══════════════════════════════════════
+           TOP HEADER — 3 columns (barcode | logo | QR)
+        ═══════════════════════════════════════ */
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 4mm;
+        }
+
+        /* LEFT — barcode + doctor info */
+        .col-left {
+            flex: 1.3;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .barcode-wrapper {
+            margin-bottom: 4px;
+        }
+
+        /* SVG barcode lines */
+        .barcode-svg {
+            display: block;
+        }
+
+        .barcode-num {
+            font-size: 6.5pt;
+            color: #333;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        .doctor-name-top {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #111;
+            margin-top: 3px;
+        }
+
+        .doctor-meta {
+            font-size: 8pt;
+            color: #444;
+            line-height: 1.85;
+            margin-top: 2px;
+        }
+
+        .doctor-meta a, .doctor-meta .site {
+            color: #1a7fc1;
+            text-decoration: none;
+        }
+
+        /* CENTER — logo */
+        .col-center {
+            flex: 1;
+            text-align: center;
+            padding-top: 2px;
+        }
+
+        .brand-logo {
+            font-size: 28pt;
+            font-weight: 900;
+            color: #1a7fc1;
+            letter-spacing: -1.5px;
+            line-height: 1;
+            font-style: italic;
+        }
+
+        /* RIGHT — QR + date */
+        .col-right {
+            flex: 1.3;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .qr-img {
+            width: 65px;
+            height: 65px;
+            display: block;
+            margin-left: auto;
+        }
+
+        .qr-title {
+            font-size: 8pt;
+            font-weight: bold;
+            color: #222;
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .qr-sub {
+            font-size: 6.5pt;
+            color: #777;
+            line-height: 1.5;
+            text-align: right;
+            max-width: 105px;
+            margin-left: auto;
+            margin-top: 2px;
+        }
+
+        .header-date {
+            font-size: 9pt;
+            color: #333;
+            margin-top: 8px;
+            font-style: italic;
+            text-align: right;
+        }
+
+        /* no QR placeholder */
+        .qr-placeholder {
+            width: 65px;
+            height: 65px;
+            border: 0.5pt dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6pt;
+            color: #bbb;
+            text-align: center;
+            margin-left: auto;
+        }
+
+        /* ═══════════════════════════════════════
+           SEPARATORS
+        ═══════════════════════════════════════ */
+        .sep-solid {
+            border: none;
+            border-top: 0.7pt solid #bbb;
+            margin: 3.5mm 0;
+        }
+        .sep-light {
+            border: none;
+            border-top: 0.5pt solid #ddd;
+            margin: 3mm 0;
+        }
+        .sep-dot {
+            border: none;
+            border-top: 0.5pt dashed #ccc;
+            margin: 3mm 0;
+        }
+
+        /* ═══════════════════════════════════════
+           PATIENT LINE
+        ═══════════════════════════════════════ */
+        .patient-line {
+            font-size: 10.5pt;
+            color: #111;
+            margin: 2.5mm 0;
+            line-height: 1.6;
+        }
+        .patient-line strong {
+            font-weight: bold;
+        }
+        .patient-meta {
+            font-size: 9.5pt;
+            color: #333;
+            display: inline;
+        }
+
+        /* ═══════════════════════════════════════
+           ALERTS
+        ═══════════════════════════════════════ */
+        .controlled-alert {
+            font-size: 8.5pt;
+            color: #7a3000;
+            border: 0.5pt solid #c06000;
+            padding: 5px 10px;
+            margin: 2.5mm 0;
+            background: #fffaf3;
+        }
+        .draft-alert {
+            font-size: 8pt;
+            color: #b05000;
+            border: 0.5pt dashed #dda060;
+            padding: 4px 10px;
+            margin: 2.5mm 0;
+            text-align: center;
+            background: #fffdf8;
+        }
+
+        /* ═══════════════════════════════════════
+           MEDICATIONS
+        ═══════════════════════════════════════ */
+        .medications {
+            margin: 3mm 0 4mm 0;
+        }
+
+        .med-item {
+            margin-bottom: 1mm;
+            padding-left: 1mm;
+        }
+
+        .med-name {
+            font-size: 11pt;
+            font-weight: bold;
+            text-decoration: underline;
+            color: #111;
+            display: inline;
+        }
+
+        .med-form {
+            font-size: 9.5pt;
+            color: #555;
+            font-style: italic;
+            display: inline;
+            margin-left: 4px;
+        }
+
+        .med-posology {
+            font-size: 10pt;
+            color: #222;
+            margin-top: 3px;
+            line-height: 1.55;
+            padding-left: 3mm;
+        }
+
+        .med-qty {
+            font-size: 9.5pt;
+            color: #333;
+            padding-left: 3mm;
+            margin-top: 1px;
+        }
+
+        .med-qty-label {
+            font-style: italic;
+        }
+
+        .med-instructions {
+            font-size: 9pt;
+            color: #666;
+            font-style: italic;
+            padding-left: 3mm;
+            margin-top: 2px;
+        }
+
+        .med-sub {
+            font-size: 8pt;
+            color: #999;
+            padding-left: 3mm;
+            margin-top: 1px;
+        }
+
+        /* ═══════════════════════════════════════
+           NOTES
+        ═══════════════════════════════════════ */
+        .notes-block {
+            font-size: 9pt;
+            color: #444;
+            font-style: italic;
+            margin: 3mm 0;
+            padding-left: 5mm;
+            border-left: 1pt solid #ccc;
+            line-height: 1.6;
+        }
+        .notes-title {
+            font-weight: bold;
+            font-style: normal;
+            font-size: 8.5pt;
+            color: #555;
+            display: block;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        /* ═══════════════════════════════════════
+           SIGNATURE  (Qare style)
+        ═══════════════════════════════════════ */
+        .signature-section {
+            margin-top: 10mm;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .sig-block { flex: 1; }
+
+        .sig-doctor-name {
+            font-size: 13pt;
+            font-weight: bold;
+            color: #111;
+        }
+
+        .sig-label {
+            font-size: 10pt;
+            font-style: italic;
+            color: #444;
+            margin-top: 3px;
+        }
+
+        .sig-status-ok {
+            font-size: 8pt;
+            color: #2a7a2a;
+            margin-top: 5px;
+        }
+
+        .sig-status-nok {
+            font-size: 8pt;
+            color: #c05000;
+            margin-top: 5px;
+        }
+
+        .sig-svg {
+            margin-top: 5mm;
+            display: block;
+        }
+
+        /* ═══════════════════════════════════════
+           FOOTER
+        ═══════════════════════════════════════ */
+        .footer {
+            margin-top: 10mm;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-top: 3mm;
+            border-top: 0.5pt solid #ddd;
+        }
+
+        .footer-left {
+            font-size: 7pt;
+            color: #aaa;
+            line-height: 1.7;
+        }
+
+        .footer-right {
+            text-align: right;
+            font-size: 7.5pt;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .footer-note {
+            margin-top: 3mm;
+            font-size: 6.5pt;
+            color: #bbb;
+            line-height: 1.5;
+            font-style: italic;
+            border-top: 0.5pt solid #eee;
+            padding-top: 2mm;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     TOP HEADER
+═══════════════════════════════════════ -->
+<div class="top-header">
+
+    <!-- LEFT: barcode + doctor info -->
+    <div class="col-left">
+
+        <!-- Barcode (SVG generated from prescriptionId) -->
+        <!-- Logo placeholder — replace src with your real logo later -->
+        <div class="logo-placeholder" style="height: 34px; margin-bottom: 4px;">
+            <!-- <img src="/images/logo.png" height="34" alt="MediConnect"/> -->
+        </div>
+        <!-- Doctor info -->
+        <div class="doctor-name-top"
+             th:text="${prescription.doctorFullName}">Dr. Nom Médecin</div>
+        <div class="doctor-meta">
+            <span th:if="${prescription.doctorSpecialty}"
+                  th:text="${prescription.doctorSpecialty}">Médecin Généraliste</span><br/>
+            <span th:if="${prescription.clinicName}"
+                  th:text="${prescription.clinicName}"></span><br/>
+            <span th:if="${prescription.doctorRppsNumber}">
+                N° RPPS : <span th:text="${prescription.doctorRppsNumber}"></span><br/>
+            </span>
+            <span th:if="${prescription.clinicPhone}"
+                  th:text="${prescription.clinicPhone}"></span><br/>
+            <span class="site">mediconnect.ma</span>
+        </div>
+    </div>
+
+    <!-- CENTER: brand logo -->
+    <div class="col-center">
+        <div class="brand-logo">MediConnect</div>
+    </div>
+
+    <!-- RIGHT: QR + ESPACE PHARMA + date -->
+    <div class="col-right">
+        <!-- QR Code if available -->
+        <div th:if="${prescription.qrCodeBase64}">
+            <img class="qr-img"
+                 th:src="'data:image/png;base64,' + ${prescription.qrCodeBase64}"
+                 alt="QR Code"/>
+        </div>
+        <!-- Placeholder if no QR yet -->
+        <div class="qr-placeholder" th:unless="${prescription.qrCodeBase64}">
+            QR<br/>non<br/>généré
+        </div>
+
+        <div class="qr-title">ESPACE PHARMA</div>
+        <div class="qr-sub">
+            Un doute sur l'ordonnance ?<br/>
+            Scannez le QR code pour<br/>
+            délivrez en toute sécurité
+        </div>
+        <div class="header-date"
+             th:text="'le ' + ${prescriptionDate}">le 01/01/2026</div>
+    </div>
+
+</div>
+
+<hr class="sep-solid"/>
+
+<!-- ═══════════════════════════════════════
+     PATIENT LINE  — "Ordonnance pour M. NOM né(e) le XX/XX/XXXX, XX ans"
+     Age is derived from patientDateOfBirth in the controller (passed as ${patientAge})
+═══════════════════════════════════════ -->
+<div class="patient-line">
+    Ordonnance à destination de
+    <strong th:text="${prescription.patientFullName}">Nom du Patient</strong>
+    <span th:if="${prescription.patientDateOfBirth}" class="patient-meta">
+        né(e) le
+        <span th:text="${prescription.patientDateOfBirth}"></span>
+        <span th:if="${patientAge != null}">,
+            <span th:text="${patientAge}"></span> ans
+        </span>
+    </span>
+</div>
+
+<hr class="sep-solid"/>
+
+<!-- ALERTS -->
+<div class="controlled-alert"
+     th:if="${prescription.controlledSubstance}">
+    &#9888;&nbsp; ORDONNANCE SÉCURISÉE — Médicament à prescription restreinte
+</div>
+
+<div class="draft-alert" th:if="${!isSigned}">
+    &#9888;&nbsp; Document non signé — non valide en pharmacie
+</div>
+
+<!-- ═══════════════════════════════════════
+     MEDICATIONS
+═══════════════════════════════════════ -->
+<div class="medications">
+    <div th:each="item, iterStat : ${prescription.items}">
+
+        <div class="med-item">
+
+            <!-- Drug name underlined + active ingredient (like Qare: "PARACETAMOL 1g gél") -->
+            <div>
+                <span class="med-name"
+                      th:text="${item.drugName}">Médicament</span>
+                <span class="med-form"
+                      th:if="${item.activeIngredient}"
+                      th:text="${item.activeIngredient}"></span>
+            </div>
+
+            <!-- Posology line (like Qare: "1 unité(s) de dose, toutes les X heures pendant Y jours") -->
+            <div class="med-posology">
+                <span th:text="${item.quantity}">1</span> unité(s) de dose,
+                <span th:text="${item.frequency}">3 fois par jour</span>
+                pendant <span th:text="${item.durationDays}">7</span> jour(s)
+            </div>
+
+            <!-- Route + Dosage -->
+            <div class="med-posology">
+                <span th:if="${item.route}">
+                    Voie : <span th:text="${item.route}">orale</span> —
+                </span>
+                Dosage : <span th:text="${item.dosage}">500mg</span>
+            </div>
+
+            <!-- Quantity -->
+            <div class="med-qty">
+                <span class="med-qty-label">Quantité :</span>
+                <span th:text="${item.quantity}">21</span> unité(s)
+            </div>
+
+            <!-- Instructions -->
+            <div class="med-instructions"
+                 th:if="${item.instructions}"
+                 th:text="${item.instructions}">
+            </div>
+
+            <!-- Substitution -->
+            <div class="med-sub"
+                 th:text="${item.substitutionAllowed}
+                     ? 'Substitution autorisée'
+                     : 'Non substituable'">
+            </div>
+
+        </div>
+
+        <!-- dashed separator between drugs -->
+        <hr class="sep-dot" th:if="${!iterStat.last}"/>
+
+    </div>
+</div>
+
+<!-- NOTES / Recommandations -->
+<div class="notes-block" th:if="${prescription.notes}">
+    <span class="notes-title">Recommandations</span>
+    <span th:text="${prescription.notes}"></span>
+</div>
+
+<hr class="sep-light"/>
+
+<!-- ═══════════════════════════════════════
+     SIGNATURE  (Qare style — name bold + italic label + jagged SVG)
+═══════════════════════════════════════ -->
+<div class="signature-section">
+    <div class="sig-block">
+
+        <!-- Doctor name bold, large -->
+        <div class="sig-doctor-name"
+             th:text="${prescription.doctorFullName}">
+            Dr. Nom Médecin
+        </div>
+
+        <!-- "Signature sécurisée" italic -->
+        <div class="sig-label">Signature sécurisée</div>
+
+        <!--
+            Jagged handwritten-style SVG signature (like Qare's scribble).
+            In production you can replace this with a real signature image
+            stored per doctor, e.g.:
+            <img th:src="'data:image/png;base64,' + ${doctorSignatureImage}" width="180"/>
+        -->
+        <svg class="sig-svg"
+             xmlns="http://www.w3.org/2000/svg"
+             viewBox="0 0 200 65"
+             width="180"
+             height="55">
+            <!-- Main jagged strokes — mimics Qare's sharp X-like scribble -->
+            <path
+                    d="M8,50
+                   L22,18
+                   L36,48
+                   L44,28
+                   L54,52
+                   L60,22"
+                    stroke="#111"
+                    stroke-width="2"
+                    fill="none"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"/>
+            <path
+                    d="M48,38
+                   L72,14
+                   L80,42
+                   L88,20"
+                    stroke="#111"
+                    stroke-width="1.8"
+                    fill="none"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"/>
+            <!-- trailing tail line like Qare -->
+            <path
+                    d="M85,28
+                   C100,18 118,32 140,24
+                   C155,18 168,28 185,22"
+                    stroke="#111"
+                    stroke-width="1.4"
+                    fill="none"
+                    stroke-linecap="round"/>
+        </svg>
+
+        <!-- Signature status -->
+        <div class="sig-status-ok" th:if="${isSigned}">
+            &#10003; Signature électronique vérifiée
+            — <span th:text="${signedDate}"></span>
+        </div>
+        <div class="sig-status-nok" th:if="${!isSigned}">
+            &#10005; Document non encore signé
+        </div>
+
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     FOOTER  (right-aligned address like Qare)
+═══════════════════════════════════════ -->
+<div class="footer">
+    <div class="footer-left">
+        En cas d'urgence, appeler le 15 ou 112<br/>
+        Contact 7j/7 via MediConnect<br/>
+        par tel au +212 5XX-XXXXXX
+    </div>
+    <div class="footer-right">
+        <span th:if="${prescription.clinicAddress}"
+              th:text="${prescription.clinicAddress}"></span><br/>
+        <span th:if="${prescription.clinicPhone}"
+              th:text="${prescription.clinicPhone}"></span><br/>
+        Valable jusqu'au
+        <strong th:text="${expiresDate}">01/01/2027</strong>
+    </div>
+</div>
+
+<div class="footer-note">
+    Il est rappelé que le numéro d'identification officiel des professionnels de santé (N° RPPS) est un identifiant
+    unique et pérenne. Ce document est confidentiel et réservé au patient désigné et aux professionnels de santé
+    habilités. Généré par la plateforme MediConnect — mediconnect.ma
+</div>
+
+</body>
+</html>
