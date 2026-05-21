@@ -68,14 +68,21 @@ public class WebSecurityConfig {
                                 "/api/users/me",
                                 "/api/users/patients/**",
                                 "/api/users/doctors",
+                                "/api/users/doctors/*",
                                 "/api/users/doctors/search",
                                 "/api/users/pharmacists",
+                                "/api/users/pharmacists/*",
+                                "/api/users/professional-documents/**",
                                 "/api/users/search",
                                 "/api/users/*/subscription",
                                 "/api/users/batch-import/**",
                                 "/api/users/*/clinics",
                                 "/api/users/clinics/**"
                         ).authenticated()
+                        .requestMatchers(
+                                "/api/users/doctors/*/verification",
+                                "/api/users/pharmacists/*/verification"
+                        ).hasRole("ADMIN")
                         .requestMatchers(
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
