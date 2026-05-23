@@ -1,66 +1,95 @@
-# MedConnect - Backend Microservices
+# 🏥 MedConnect - Healthcare Backend Microservices
 
-A Spring Boot microservices architecture for **MedConnect**, a comprehensive healthcare management platform built with Java 17, Spring Cloud, and MongoDB.
+**Complete Spring Boot microservices platform for healthcare management**
 
-## 📋 Table of Contents
+A complete Spring Boot microservices architecture with authentication, user management, subscriptions, and event streaming.
 
-- [Project Overview](#project-overview)
-- [Architecture](#architecture)
-- [Prerequisites](#prerequisites)
-- [Installation & Setup](#installation--setup)
-- [Environment Configuration](#environment-configuration)
-- [Running Services](#running-services)
-- [API Documentation](#api-documentation)
-- [Authentication & JWT](#authentication--jwt)
-- [Testing with Postman](#testing-with-postman)
-- [Project Structure](#project-structure)
-- [Common Issues & Troubleshooting](#common-issues--troubleshooting)
-- [Contributing](#contributing)
-- [Future Services](#future-services)
+**Status**: ✅ Ready | **Version**: 1.0.0 | **Java**: 17+ | **Spring Boot**: 3.2.3
+
+## 📋 Quick Navigation
+
+### For Backend Developers
+- [Prerequisites](#prerequisites) - What you need installed
+- [Backend Setup](#backend-setup-all-services) - Complete setup guide
+- [Run Locally](#run-locally) - Start all 3 services
+- [Testing](#testing) - Run tests
+
+### For Frontend Developers (Oumaima 👩‍💻)
+- [Frontend Integration](#frontend-integration) - How to connect frontend
+- [API Reference](#api-endpoints---quick-reference) - All 30 endpoints
+- [Examples](#examples) - Code snippets
+
+### For DevOps/Deployment
+- [Environment Variables](#environment-variables) - Development config
+- [Troubleshooting](#troubleshooting) - Common issues
 
 ---
 
-## 🏥 Project Overview
+## 🎯 What's Built (MS-01 & MS-02 - 100% Complete)
 
-MedConnect is a microservices-based healthcare backend platform providing:
-- **User Management** with JWT authentication
-- **API Gateway** for service routing
-- **Service Discovery** using Eureka
-- **OAuth2** integration (Google sign-in)
-- **Email Notifications** with OTP verification
-- **Swagger/OpenAPI** documentation
+### MS-01: Authentication & Identity ✅
+- ✅ Email/password signup with email verification
+- ✅ Multi-factor authentication (TOTP, SMS, Email OTP)
+- ✅ JWT tokens with refresh mechanism
+- ✅ Session management per device
+- ✅ Rate limiting (5 attempts/15 min)
+- ✅ Account lockout (after 5 failures)
+- ✅ Password reset with OTP
+- ✅ Google OAuth integration
+- ✅ Logout all devices endpoint
+- ✅ All 5 Kafka events publishing
 
-### Tech Stack
-- **Java 17** - Programming language
-- **Spring Boot 3.2.3** - Framework
-- **Spring Cloud 2023.0.0** - Microservices tools
-- **MongoDB** - NoSQL database
-- **Eureka** - Service discovery
-- **JWT (JJWT)** - Token-based authentication
-- **Swagger/Springdoc OpenAPI** - API documentation
+### MS-02: User Management ✅
+- ✅ Patient/Doctor/Pharmacist profile management
+- ✅ Moroccan professional verification workflow (doctor/pharmacist)
+- ✅ Subscription plans (BASIC/PREMIUM/ENTERPRISE)
+- ✅ Plan-based limits (200/1000/10000 patients)
+- ✅ Bulk CSV import with validation
+- ✅ Doctor search by specialty/language/location
+- ✅ Clinic account management with team invites
+- ✅ Subscription upgrade/downgrade with payment
+- ✅ Stripe payment integration (configurable)
+- ✅ Database-driven subscription plans
+- ✅ All 6 Kafka events publishing
+
+### MS-09: Audit & Compliance ⏳
+- Coming soon: Immutable audit logs, GDPR data export, anomaly detection
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-MedConnect-backend-microservices (Parent POM)
-│
-├── user-service (Port 8081)
-│   ├── Authentication & Authorization (JWT)
-│   ├── User Management
-│   ├── Google OAuth Integration
-│   ├── OTP Email Verification
-│   └── Admin Management
-│
-├── api-gateway (Port 8080)
-│   ├── Request Routing
-│   ├── Load Balancing
-│   ├── Authentication Filter
-│   └── Cross-cutting Concerns
-│
-└── discovery-service (Port 8761)
-    └── Eureka Server (Service Registry)
+┌─────────────────────────────────────────────────┐
+│          Frontend (React/Vue/Angular)           │
+│         (http://localhost:3000)                 │
+└────────────────────┬────────────────────────────┘
+                     │ HTTP/HTTPS
+                     ▼
+┌─────────────────────────────────────────────────┐
+│    API Gateway (Port 8080)                      │
+│  - Request routing to services                  │
+│  - Rate limiting (5 attempts/15min)             │
+│  - CORS control                                 │
+│  - JWT validation                               │
+└────────┬──────────────────────────┬─────────────┘
+         │                          │
+         ▼                          ▼
+┌──────────────────────┐   ┌───────────────────────┐
+│ User Service         │   │ Discovery Service     │
+│ (Port 8081)          │   │ (Port 8761 - Eureka)  │
+│ - Auth & MFA         │   │ - Service Registry    │
+│ - User Profiles      │   │ - Health Checks       │
+│ - Subscriptions      │   │                       │
+│ - Bulk Import        │   │                       │
+└──────┬───────────────┘   └───────────────────────┘
+       │
+       ├─────► MongoDB (localhost:27017)
+       │       - Collections: users, sessions, subscriptions, etc.
+       │
+       └─────► Kafka (localhost:9092)
+               - Topics: user.created, user.login, subscription.upgraded, etc.
+```
 
 
 ```
@@ -69,314 +98,433 @@ MedConnect-backend-microservices (Parent POM)
 
 ## ✅ Prerequisites
 
-### Required
-- **Java 17** (Eclipse Temurin, Oracle, or OpenJDK)
-- **Maven 3.8.1+** (included: `./mvnw`)
-- **MongoDB 5.0+** (local or cloud)
-- **Git**
+### Required Tools
+- **Java 17** (JDK) - [Download](https://adoptium.net/)
+  ```bash
+  java -version
+  # Output: openjdk version "17.x.x" or higher
+  ```
 
-### Optional (for testing)
-- **Postman** or Insomnia (API testing)
-- **IntelliJ IDEA** (IDE - recommended)
-- **Docker** (for containerization)
+- **Maven 3.8.1+** - [Download](https://maven.apache.org/download.cgi)
+  ```bash
+  mvn --version
+  # Output: Apache Maven 3.8.1 or higher
+  ```
 
-### Check Prerequisites
-```bash
-java -version          # Should show Java 17.x.x
-mvn --version         # Or: ./mvnw --version
-mongod --version      # MongoDB version
-```
+- **MongoDB 5.0+** - [Download](https://www.mongodb.com/try/download/community)
+  ```bash
+  mongosh
+  # Opens MongoDB shell
+  ```
+
+- **Kafka 3.5+** - [Download](https://kafka.apache.org/downloads)
+  ```bash
+  # For event streaming between services
+  ```
+
+- **Git 2.40+**
+  ```bash
+  git --version
+  ```
+
+### Optional but Recommended
+- **IntelliJ IDEA** (IDE)
+- **Postman** or **Insomnia** (API testing)
+- **DBeaver** (MongoDB UI)
 
 ---
 
-## 📦 Installation & Setup
+## 🔧 Backend Setup (All Services)
 
-### 1. Clone the Repository
+### Step 1: Clone Repository
 ```bash
-git clone https://github.com/yourusername/MedConnect-backend-microservices.git
+git clone https://github.com/zakaria-beny/MedConnect.git
 cd MedConnect-backend-microservices
 ```
 
-### 2. Set Java Version (IntelliJ)
-1. **File → Project Structure** (`Ctrl+Alt+Shift+S`)
-2. **SDK** → Select Java 17 (Download if needed)
-3. Click **Apply → OK**
 
-### 3. Configure Build Tools
-1. **Build, Execution, Deployment → Build Tools → Maven**
-2. **JDK for importer**: Select Java 17
-3. Click **OK**
+### Step 2: Setup Environment Variables
 
-### 4. Install Dependencies
+Create `.env` file in project root:
+
 ```bash
-./mvnw clean install -DskipTests
-```
-
----
-
-## 🔐 Environment Configuration
-
-### Create `.env` File
-Create a `.env` file in the **project root** directory:
-
-**⚠️ IMPORTANT: `.env` is in `.gitignore` and should NEVER be committed to version control!**
-
-```env
 # JWT Configuration
-JWT_SECRET=medconnect-super-secret-key-32-chars-min-2026!!
+JWT_SECRET=medconnect-super-secret-key-that-is-at-least-32-chars-long
+JWT_EXPIRATION=900000
+JWT_REFRESH_EXPIRATION=604800000
 
-# Admin Account
-ADMIN_EMAIL=admin@medconnect.com
-ADMIN_PASSWORD=Admin12345
+# Database
+MONGODB_URI=mongodb://localhost:27017/medconnect
+
+# Email Service (Gmail App Password)
+MAIL_USERNAME=your-email@gmail.com
+MAIL_PASSWORD=your-app-specific-password
+
+# Twilio (Optional - SMS MFA)
+TWILIO_ACCOUNT_SID=your_account_sid
+TWILIO_AUTH_TOKEN=your_auth_token
+TWILIO_PHONE_NUMBER=+1234567890
+
+# Stripe (Optional - Payments)
+STRIPE_SECRET_KEY=sk_test_xxxxx
+STRIPE_PUBLISHABLE_KEY=pk_test_xxxxx
 
 # Google OAuth
-GOOGLE_CLIENT_IDS=980492524757-g1h19t4a2n30ut7vq6mi4uv6ooijt7sg.apps.googleusercontent.com
+GOOGLE_CLIENT_ID=your_google_client_id
 
-# Email SMTP (Gmail with App Password)
-MAIL_HOST=smtp.gmail.com
-MAIL_PORT=587
+# Kafka
+KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+
+# Subscription Payment Provider
+MEDCONNECT_SUBSCRIPTION_PAYMENT_PROVIDER=stripe
+
+# API Gateway CORS
+GATEWAY_CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
+```
+
+**Get Gmail App Password**:
+1. Go to [Google Account Security](https://myaccount.google.com/apppasswords)
+2. Select "Mail" and "Windows Computer"
+3. Copy the 16-character password → `.env` as `MAIL_PASSWORD`
+
+### Step 5: Build All Services
+
+```bash
+# From root directory
+mvn clean install
+
+# Expected: BUILD SUCCESS
+### Start Services (In This Order)
+ 1: Discovery Service (Eureka)**
+
+
+ 2: User Service**
+
+# Should see: UserServiceApplication ... started on port 8081
+#            Registered with Eureka
+```
+
+3: API Gateway**
+
+# Should see: GatewayApplication ... started on port 8080
+```
+
+### Verify Services Are Running
+
+
+# Check Eureka dashboard
+ use browser:
+# Eureka: http://localhost:8761
+# Swagger API Docs: http://localhost:8080/swagger-ui.html
+```
+
+### Quick Test - Create Account
+
+```bash
+curl -X POST http://localhost:8080/api/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com",
+    "password": "TestPassword123!",
+    "firstName": "Test",
+    "lastName": "User",
+    "userRole": "PATIENT"
+  }'
+
+# Response: { "message": "Signup successful", "userId": "..." }
+```
+
+### Quick Test - Browser UI (API Tester)
+
+When `api-gateway` is running, open:
+
+```
+http://localhost:8080/
+```
+
+What you can do in the built-in tester:
+- Load presets for Auth, Users, and DMP endpoints
+- Paste your JWT token once, then call protected endpoints
+- Edit method/path/query/body and send requests directly
+- See formatted response + a generated `curl` command
+
+---
+
+## 🧪 Testing
+
+### Run All Tests
+```bash
+mvn test
+
+# Expected: BUILD SUCCESS
+# [INFO] Tests run: XX, Failures: 0, Errors: 0
+```
+
+### Run Specific Service Tests
+```bash
+cd user-service && mvn test
+cd ../api-gateway && mvn test
+cd ../discovery-service && mvn test
+```
+
+### Test Coverage Report
+```bash
+mvn clean test jacoco:report
+# Open: target/site/jacoco/index.html
+```
+
+---
+
+## 📚 API Endpoints - Quick Reference
+
+### Authentication (MS-01)
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| POST | `/api/auth/signup` | Create account |
+| POST | `/api/auth/verify-email` | Verify email with OTP |
+| POST | `/api/auth/login` | Login (returns tokens) |
+| POST | `/api/auth/mfa/setup` | Enable 2FA |
+| POST | `/api/auth/mfa/verify` | Verify MFA code |
+| POST | `/api/auth/logout` | Logout current session |
+| POST | `/api/auth/logout-all-devices` | ⭐ NEW - Logout all sessions |
+| POST | `/api/auth/refresh` | Refresh access token |
+| GET | `/api/auth/sessions` | List active sessions |
+
+### User Profiles (MS-02)
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| POST | `/api/users/patients` | Create patient profile |
+| GET | `/api/users/patients/{userId}` | Get patient |
+| POST | `/api/users/doctors` | Create doctor profile |
+| GET | `/api/users/doctors/{userId}` | Get doctor profile |
+| GET | `/api/users/doctors/search` | Search doctors |
+| PUT | `/api/users/doctors/{userId}/verification` | Admin verify/reject doctor |
+| POST | `/api/users/pharmacists` | Create pharmacist profile |
+| GET | `/api/users/pharmacists/{userId}` | Get pharmacist profile |
+| PUT | `/api/users/pharmacists/{userId}/verification` | Admin verify/reject pharmacist |
+| POST | `/api/users/professional-documents/upload` | Upload doctor/pharmacist proof file |
+| GET | `/api/users/professional-documents/user/{userId}` | List stored proof docs |
+| GET | `/api/users/professional-documents/{documentId}/download` | Download proof file (signed link) |
+| GET | `/api/users/professional-documents/audit/{userId}` | Admin audit history (immutable) |
+| POST | `/api/users/{userId}/subscription` | Get subscription |
+| PUT | `/api/users/{userId}/subscription` | Upgrade/downgrade |
+| POST | `/api/users/batch-import` | Bulk import users |
+| GET | `/api/users/batch-import/{id}/status` | Check import progress |
+| POST | `/api/users/{userId}/clinics` | Create clinic |
+
+**Full API Reference**: See `FRONTEND_API_GUIDE.md` (30 endpoints with examples)
+
+---
+
+## 🎨 Frontend Integration
+
+### What Frontend Developers Need to Know
+
+**Backend URL**: 
+- Development: `http://localhost:8080`
+
+**CORS**: Currently allows `http://localhost:3000` and `http://localhost:3001`
+
+### Step 1: Setup Frontend Project
+
+```bash
+npm create react-app medconnect-frontend
+cd medconnect-frontend
+
+# Install dependencies
+npm install axios jwt-decode @stripe/react-stripe-js @stripe/js
+```
+
+### Step 2: Create API Client
+
+```javascript
+// src/api/client.js
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8080',
+});
+
+// Add token to requests
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem('accessToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Auto-refresh on 401
+api.interceptors.response.use(
+  response => response,
+  async error => {
+    if (error.response?.status === 401) {
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (refreshToken) {
+        try {
+          const { data } = await axios.post(
+            `${process.env.REACT_APP_API_URL}/api/auth/refresh`,
+            { refreshToken }
+          );
+          localStorage.setItem('accessToken', data.accessToken);
+          localStorage.setItem('refreshToken', data.refreshToken);
+          return api(error.config);
+        } catch (err) {
+          localStorage.clear();
+          window.location.href = '/login';
+        }
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default api;
+```
+
+### Step 3: Environment Configuration
+
+```bash
+# frontend/.env.local
+REACT_APP_API_URL=http://localhost:8080
+REACT_APP_GOOGLE_CLIENT_ID=your_google_client_id
+REACT_APP_STRIPE_PUBLIC_KEY=pk_test_xxxxx
+```
+
+### Step 4: Implement Login
+
+```javascript
+// src/services/authService.js
+import api from '../api/client';
+
+export const authService = {
+  signup: (email, password, firstName, lastName, userRole) =>
+    api.post('/api/auth/signup', {
+      email, password, firstName, lastName, userRole
+    }),
+
+  verifyEmail: (email, otp) =>
+    api.post('/api/auth/verify-email', { email, otp }),
+
+  login: (email, password) =>
+    api.post('/api/auth/login', { email, password }),
+
+  verifyMFA: (userId, code, sessionId) =>
+    api.post('/api/auth/verify-login', { userId, code, sessionId }),
+
+  setupMFA: (mfaType) =>
+    api.post('/api/auth/mfa/setup', { mfaType }),
+
+  logout: () =>
+    api.post('/api/auth/logout'),
+
+  refreshToken: (refreshToken) =>
+    api.post('/api/auth/refresh', { refreshToken }),
+};
+```
+
+### Step 5: Store Tokens Securely
+
+```javascript
+// After successful login/signup
+localStorage.setItem('accessToken', response.data.accessToken);  // 15 min
+localStorage.setItem('refreshToken', response.data.refreshToken);  // 7 days
+localStorage.setItem('userId', response.data.user.id);
+localStorage.setItem('userRole', response.data.user.userRole);
+```
+
+### Common Frontend Flows
+
+**Signup → Email Verification → Login Flow**:
+1. User enters email/password → call `/api/auth/signup`
+2. Show "Check email for OTP" message
+3. User enters OTP → call `/api/auth/verify-email`
+4. Redirect to login page
+5. User enters email/password → call `/api/auth/login`
+6. If `mfaRequired: true`, show MFA input
+7. User enters 2FA code → call `/api/auth/verify-login`
+8. Save tokens → redirect to dashboard
+
+**Create Patient Profile**:
+```javascript
+const response = await api.post('/api/users/patients', {
+  userId: user.id,
+  bloodType: 'O+',
+  dateOfBirth: '1990-05-15',
+  allergies: ['Penicillin']
+});
+```
+
+**Search Doctors**:
+```javascript
+const doctors = await api.get('/api/users/doctors/search', {
+  params: {
+    specialty: 'Cardiologist',
+    language: 'English',
+    city: 'Paris'
+  }
+});
+```
+
+### Frontend Documentation
+
+**See sections below for:**
+1. **[API Endpoints](#api-endpoints)** - All 30 endpoints with examples
+2. **[Common Frontend Flows](#common-frontend-flows)** - Login, profiles, search
+
+---
+
+## 🔐 Environment Variables
+
+### Development (`.env` in root)
+
+```bash
+# JWT
+JWT_SECRET=medconnect-super-secret-key-at-least-32-chars-long
+JWT_EXPIRATION=900000  # 15 minutes
+JWT_REFRESH_EXPIRATION=604800000  # 7 days
+
+# Database
+MONGODB_URI=mongodb://localhost:27017/medconnect
+
+# Email (Gmail App Password)
 MAIL_USERNAME=your-email@gmail.com
-MAIL_PASSWORD=your-app-password
+MAIL_PASSWORD=your-16-char-app-password
 
-# MongoDB
-MONGO_URI=mongodb://localhost:27017/medconnect_users_db
+# Twilio (SMS)
+TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxx
+TWILIO_AUTH_TOKEN=authxxxxxxxxxxxxx
+TWILIO_PHONE_NUMBER=+1234567890
 
-# Eureka Server
-EUREKA_SERVER_URL=http://localhost:8761/eureka/
+# Stripe (Payments)
+STRIPE_SECRET_KEY=sk_test_xxxxx
+STRIPE_PUBLISHABLE_KEY=pk_test_xxxxx
 
-# OTP Expiry
-OTP_EXPIRY_MINUTES=10
+# Google
+GOOGLE_CLIENT_ID=xxxxx.apps.googleusercontent.com
+
+# Kafka
+KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+
+# API Gateway
+GATEWAY_CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
 ```
 
-**Setup**: Copy the above template into your local `.env` file and update with your actual credentials. Git will ignore this file automatically.
-
-### ⚠️ Important: Set Real Credentials
-
-#### Gmail Setup (for OTP emails):
-1. Enable **2-Step Verification** on your Gmail account
-2. Create an **App Password**:
-   - Go to [Google Account Security](https://myaccount.google.com/security)
-   - App passwords → Select "Mail" and "Windows Computer"
-   - Copy the 16-character password
-   - Paste in `.env` as `MAIL_PASSWORD`
-
-#### Google OAuth Setup:
-1. Create a project on [Google Cloud Console](https://console.cloud.google.com/)
-2. Create OAuth 2.0 credentials
-3. Copy Client ID to `.env` as `GOOGLE_CLIENT_IDS`
 
 
----
+## 🐛 Troubleshooting
 
-## 🚀 Running Services
-
-###  Run All Services (IntelliJ)
-1. **Build → Rebuild Project**
-2. Right-click each service → **Run**
-   - discovery-service (waits for port 8761 to be free)
-   - user-service (depends on MongoDB & Discovery)
-   - api-gateway (routes requests)
-
-
-
----
-
-## 📚 API Documentation
-
-### Swagger UI
-Access interactive API documentation:
-
-**User Service**: http://localhost:8081/swagger-ui.html
-**API Gateway**: http://localhost:8080/swagger-ui.html
-
-### OpenAPI JSON
-```
-http://localhost:8081/api-docs
-http://localhost:8080/api-docs
-```
-
----
-
-## 🔑 Authentication & JWT
-
-### Authentication Flow
-
-#### 1. **Signup (with Email Verification)**
-```
-POST /api/auth/signup
-Body: { "nom", "prenom", "email", "telephone", "password" }
-      ↓
-→ OTP sent to email
-```
-
-#### 2. **Verify Email**
-```
-POST /api/auth/verify-email
-Body: { "email", "code" } (OTP from email)
-      ↓
-→ JWT token returned (user enabled)
-```
-
-#### 3. **Login (with 2FA)**
-```
-POST /api/auth/signin
-Body: { "email", "password" }
-      ↓
-→ OTP sent to email
-```
-
-#### 4. **Verify Login OTP**
-```
-POST /api/auth/verify-login
-Body: { "email", "code" } (OTP from email)
-      ↓
-→ JWT token returned
-```
-
-#### 5. **Use JWT Token**
-```
-GET /api/users/me
-Header: Authorization: Bearer YOUR_JWT_TOKEN
-      ↓
-→ User profile returned
-```
-
-### Protected Endpoints
-All `/api/users/**` endpoints require valid JWT token in `Authorization` header:
-```
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
----
-
-## 🧪 Testing with Postman
-
-### Import Collection
-1. Open Postman
-2. **File → Import**
-3. Create requests for each endpoint (examples below)
-
-### 1. Signup
-```
-POST http://localhost:8081/api/auth/signup
-Content-Type: application/json
-
-{
-  "nom": "Doe",
-  "prenom": "John",
-  "email": "john@example.com",
-  "telephone": "0612345678",
-  "password": "SecurePass123!"
-}
-```
-
-**Response**: User created, OTP sent to email
-
-### 2. Verify Email
-```
-POST http://localhost:8081/api/auth/verify-email
-Content-Type: application/json
-
-{
-  "email": "john@example.com",
-  "code": "123456"  // OTP from email
-}
-```
-
-**Response**:
-```json
-{
-  "accessToken": "eyJhbGciOiJIUzI1NiIs...",
-  "tokenType": "Bearer",
-  "userId": "64c1a2b3c4d5e6f7g8h9",
-  "email": "john@example.com",
-  "roles": ["ROLE_USER"]
-}
-```
-
-### 3. Login with 2FA
-```
-POST http://localhost:8081/api/auth/signin
-Content-Type: application/json
-
-{
-  "email": "john@example.com",
-  "password": "SecurePass123!"
-}
-```
-
-**Response**: OTP sent to email
-
-### 4. Verify Login OTP
-```
-POST http://localhost:8081/api/auth/verify-login
-Content-Type: application/json
-
-{
-  "email": "john@example.com",
-  "code": "123456"
-}
-```
-
-**Response**: JWT token returned
-
-### 5. Get User Profile (Protected)
-```
-GET http://localhost:8081/api/users/me
-Authorization: Bearer YOUR_JWT_TOKEN
-```
-
-**Response**:
-```json
-{
-  "id": "64c1a2b3c4d5e6f7g8h9",
-  "email": "john@example.com",
-  "nom": "Doe",
-  "prenom": "John",
-  "telephone": "0612345678"
-}
-```
-
-### 6. Update Profile (Protected)
-```
-PUT http://localhost:8081/api/users/me
-Authorization: Bearer YOUR_JWT_TOKEN
-Content-Type: application/json
-
-{
-  "nom": "Smith",
-  "prenom": "John",
-  "telephone": "0687654321"
-}
-```
-
-### 7. Google OAuth Login
-```
-POST http://localhost:8081/api/auth/google
-Content-Type: application/json
-
-{
-  "idToken": "GOOGLE_ID_TOKEN_FROM_FRONTEND"
-}
-```
-
-**Response**: JWT token + user data
-
-### 8. Password Reset
-```
-POST http://localhost:8081/api/auth/forgot-password
-{
-  "email": "john@example.com"
-}
-→ OTP sent to email
-
-POST http://localhost:8081/api/auth/reset-password
-{
-  "email": "john@example.com",
-  "code": "123456",
-  "newPassword": "NewPassword123!"
-}
-```
+| Issue | Solution |
+|-------|----------|
+| **Port already in use** | `lsof -i :8080` (macOS/Linux) or `netstat -ano \| findstr :8080` (Windows), then `kill <PID>` |
+| **MongoDB connection failed** | Start MongoDB: `brew services start mongodb-community` (macOS) or `net start MongoDB` (Windows) |
+| **Kafka not responding** | Ensure both Zookeeper and Kafka are running in separate terminals |
+| **CORS error** | Add frontend URL to `GATEWAY_CORS_ALLOWED_ORIGINS` (default: `localhost:3000`) |
+| **Email not sending** | Use Gmail App Password (not regular password). Enable 2FA on account first |
+| **JWT token expired** | Call `/api/auth/refresh` with refresh token or login again |
+| **Rate limit hit (429)** | Wait 15 minutes before retrying (5 attempts per 15 min limit) |
+| **MFA code invalid** | Ensure device clock is synchronized; try Email OTP instead |
+| **Services not discovering** | Ensure Discovery Service is running first and others can reach `localhost:8761` |
 
 ---
 
@@ -384,205 +532,63 @@ POST http://localhost:8081/api/auth/reset-password
 
 ```
 MedConnect-backend-microservices/
-├── pom.xml                          # Parent POM (dependency management)
-├── .env                             # Environment variables (IGNORE IN GIT)
-├── README.md                        # This file
+├── user-service/                    # MS-01 & MS-02: Auth & User Mgmt
+│   ├── src/main/java/.../
+│   │   ├── controller/              # REST endpoints
+│   │   ├── service/                 # Business logic
+│   │   ├── entity/                  # MongoDB documents
+│   │   ├── repository/              # Data access
+│   │   ├── config/                  # Configuration
+│   │   ├── security/                # JWT, filters
+│   │   └── dto/                     # Data transfer objects
+│   ├── src/main/resources/
+│   │   └── application.properties
+│   └── pom.xml
 │
-├── user-service/
-│   ├── pom.xml
-│   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/com/rihla/userservice/
-│   │   │   │   ├── config/           # Configuration classes
-│   │   │   │   ├── controller/       # REST endpoints
-│   │   │   │   ├── service/          # Business logic
-│   │   │   │   ├── entity/           # MongoDB documents
-│   │   │   │   ├── repository/       # Data access
-│   │   │   │   ├── security/         # JWT, OAuth, filters
-│   │   │   │   ├── googleAuth/       # Google OAuth logic
-│   │   │   │   ├── otp/              # OTP service & email
-│   │   │   │   ├── dto/              # Data transfer objects
-│   │   │   │   └── mapper/           # MapStruct mappers
-│   │   │   └── resources/
-│   │   │       └── application.properties
-│   │   └── test/
-│   │       └── java/...             # Unit tests
-│   └── target/                      # Build output
+├── api-gateway/                     # MS-02: Request routing
+│   ├── src/main/java/.../
+│   │   ├── config/                  # Gateway config
+│   │   ├── filter/                  # Request filters
+│   │   └── security/                # Auth filters
+│   ├── src/main/resources/
+│   │   └── application.properties
+│   └── pom.xml
 │
-├── api-gateway/
-│   ├── pom.xml
-│   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/com/rihla/apigateway/
-│   │   │   │   ├── config/
-│   │   │   │   ├── filter/          # Gateway filters
-│   │   │   │   └── security/
-│   │   │   └── resources/
-│   │   │       └── application.properties
-│   │   └── test/
-│   └── target/
+├── discovery-service/               # MS-03: Eureka server
+│   ├── src/main/java/.../
+│   ├── src/main/resources/
+│   │   └── application.properties
+│   └── pom.xml
 │
-├── discovery-service/
-│   ├── pom.xml
-│   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/com/rihla/discoveryservice/
-│   │   │   │   └── DiscoveryServiceApplication.java
-│   │   │   └── resources/
-│   │   │       └── application.properties
-│   │   └── test/
-│   └── target/
-│
-├── .mvn/                            # Maven wrapper
-├── mvnw                             # Maven wrapper script (Linux/Mac)
-└── mvnw.cmd                         # Maven wrapper script (Windows)
+├── pom.xml                          # Parent POM
+├── README.md                        # This file (everything in one place)
+└── SERVICE-BREAKDOWN.md             # Feature breakdown
 ```
 
 ---
 
-## 🐛 Common Issues & Troubleshooting
+## 📞 Support & Resources
 
-### Issue 1: Port Already in Use
-```
-ERROR: Address already in use: bind
-```
+### Documentation
+| Section | For Whom |
+|---------|----------|
+| [Prerequisites](#prerequisites) + [Backend Setup](#backend-setup) | Backend developers |
+| [Frontend Integration](#frontend-integration) + [API Endpoints](#api-endpoints) | Oumaima (frontend dev) |
+| [Environment Variables](#environment-variables) + [Troubleshooting](#troubleshooting) | DevOps engineers |
 
-**Solution**:
-```bash
-# Find process using port 8081
-netstat -ano | findstr :8081        # Windows
-lsof -i :8081                       # Mac/Linux
+### Links
+- **Eureka Dashboard**: http://localhost:8761
+- **API Swagger**: http://localhost:8080/swagger-ui.html
+- **GitHub**: https://github.com/zakaria-beny/MedConnect
+- **support : hhhhhhhh makaynch
 
-# Kill process
-taskkill /PID <PID> /F             # Windows
-kill -9 <PID>                       # Mac/Linux
+### Team
+- **Backend Lead**: Zakaria Beny
+- **Frontend Dev**: Oumaima 
 
-# Or change port in application.properties:
-server.port=8082
-```
 
-### Issue 2: MongoDB Connection Failed
-```
-ERROR: Failed to connect to database
-```
-
-**Solution**:
-```bash
-# Check MongoDB is running
-mongosh                             # Or: mongo
-
-# If not installed, download from: https://www.mongodb.com/try/download/community
-
-# Update .env with correct MONGO_URI
-MONGO_URI=mongodb://localhost:27017/rihla_users_db
-```
-
-### Issue 3: OTP Not Sending (Email)
-```
-ERROR: Failed to send email
-```
-
-**Solution**:
-1. Verify Gmail credentials in `.env`
-2. Use **Gmail App Password**, not regular password
-3. Enable "Less secure apps" if using old Gmail:
-   - Go to [Account Security](https://myaccount.google.com/apppasswords)
-4. Check firewall blocks port 587
-
-### Issue 4: Java Version Mismatch
-```
-ERROR: java.lang.ExceptionInInitializerError
-```
-
-**Solution**:
-1. Check Java version: `java -version` (should be 17)
-2. In IntelliJ: **File → Project Structure → SDK** → Select Java 17
-3. Restart IDE and rebuild
-
-### Issue 5: Eureka Server Not Accessible
-```
-ERROR: Cannot register with Eureka
-```
-
-**Solution**:
-1. Start discovery-service first
-2. Check it's running: http://localhost:8761
-3. In `.env`: `EUREKA_SERVER_URL=http://localhost:8761/eureka/`
-4. If running on different machine: Update hostname
-
-### Issue 6: JWT Token Validation Failed
-```
-ERROR: Invalid or expired token
-```
-
-**Solution**:
-1. Ensure `JWT_SECRET` in `.env` matches all services
-2. Token might be expired (default 24 hours)
-3. Check header format: `Authorization: Bearer <token>` (space required)
 
 ---
 
-## 🤝 Contributing
-
-### Commit Message Format
-```
-diro li ban likomm 
-this is just example:
-feat: Add email verification OTP
-fix: Resolve MongoDB connection timeout
-docs: Update README with API examples
-refactor: Simplify JWT token generation
-test: Add user authentication tests
-```
-
-### Pull Request Process
-1. Create feature branch from `main`
-2. Make changes and commit with clear messages
-3. Push to remote: `git push origin feature/xyz`
-4. Create Pull Request with description
-5. Request review from team
-6. Merge after approval
-
----
-
-## 📝 Environment Variables Reference
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `JWT_SECRET` | Secret key for JWT signing | `your-secret-key-32-chars` |
-| `ADMIN_EMAIL` | Default admin email | `admin@medconnect.com` |
-| `ADMIN_PASSWORD` | Default admin password | `Admin12345` |
-| `GOOGLE_CLIENT_IDS` | Google OAuth client ID | `xxx.apps.googleusercontent.com` |
-| `MAIL_HOST` | SMTP server | `smtp.gmail.com` |
-| `MAIL_PORT` | SMTP port | `587` |
-| `MAIL_USERNAME` | Email address for sending | `your-email@gmail.com` |
-| `MAIL_PASSWORD` | Email app password | `16-char-app-password` |
-| `MONGO_URI` | MongoDB connection string | `mongodb://localhost:27017/medconnect_db` |
-| `EUREKA_SERVER_URL` | Eureka service registry URL | `http://localhost:8761/eureka/` |
-| `OTP_EXPIRY_MINUTES` | OTP validity duration | `10` |
-
----
-
-## 📞 Support
-
-For issues or questions:
-1. Check Group wtsp
-2. Review API documentation: http://localhost:8081/swagger-ui.html
-3. Check logs in IDE console
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see LICENSE file for details.
-
----
-
-## 👥 Authors
-
-- **MedConnect Team**
-- ALL of us
-
-**Last Updated**: April 2026
-**Version**: 1.0.0
-**Status**: Active Development
+**Last Updated**: 2026-05-06  
+**Version**: 1.0.0  

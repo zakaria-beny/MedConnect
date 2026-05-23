@@ -14,6 +14,7 @@ public class OtpRecord {
     @Id
     private String id;
 
+    @Indexed
     private String email;
 
     private String code;
@@ -22,7 +23,6 @@ public class OtpRecord {
 
     private LocalDateTime createdAt;
 
-    @Indexed(expireAfterSeconds = 0)
     private LocalDateTime expiresAt;
 
     private boolean used = false;
