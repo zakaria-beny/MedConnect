@@ -5,12 +5,8 @@ server:
 spring:
   application:
     name: api-gateway
-
   main:
     web-application-type: reactive
-
-
-
   cloud:
     gateway:
       metrics:
@@ -19,36 +15,43 @@ spring:
         locator:
           enabled: true
           lower-case-service-id: true
-
       routes:
-        # ✅ Block any internal endpoints from outside (FIXED PATTERN)
         - id: block-internal
           uri: no://op
           predicates:
-            # ❌ was /api/**/internal/** (invalid in Spring Boot 3 / PathPatternParser)
-            # ✅ valid pattern: one segment between /api and /internal
             - Path=/api/*/internal/**
           filters:
             - SetStatus=403
-
-        # ✅ Auth / Users
         - id: user-service
           uri: lb://user-service
           predicates:
             - Path=/api/users/**,/api/auth/**
-
         - id: dmp-service
           uri: lb://dmp-service
           predicates:
             - Path=/api/dmp/**
-
-        # ✅ Prescription Service (NEWLY ADDED)
         - id: prescription-service
           uri: lb://prescription-service
           predicates:
             - Path=/api/prescriptions/**
-
-      # ✅ CORS (Web + Mobile)
+        - id: user-service-openapi
+          uri: lb://user-service
+          predicates:
+            - Path=/api-docs/user-service
+          filters:
+            - RewritePath=/api-docs/user-service, /v3/api-docs
+        - id: dmp-service-openapi
+          uri: lb://dmp-service
+          predicates:
+            - Path=/api-docs/dmp-service
+          filters:
+            - RewritePath=/api-docs/dmp-service, /v3/api-docs
+        - id: prescription-service-openapi
+          uri: lb://prescription-service
+          predicates:
+            - Path=/api-docs/prescription-service
+          filters:
+            - RewritePath=/api-docs/prescription-service, /v3/api-docs
       globalcors:
         add-to-simple-url-handler-mapping: true
         corsConfigurations:
@@ -60,26 +63,34 @@ spring:
             allowedHeaders: ["Authorization", "Content-Type", "X-Requested-With"]
             exposedHeaders: ["Authorization"]
             allowCredentials: true
-
-# ✅ Your custom config
 medconnect:
   security:
     jwt-secret: ${JWT_SECRET:medconnect-super-secret-key-that-is-at-least-32-chars-long}
-
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+springdoc:
+  swagger-ui:
+    disable-swagger-default-url: true
+    urls:
+      - name: user-service
+        url: /api-docs/user-service
+      - name: dmp-service
+        url: /api-docs/dmp-service
+      - name: prescription-service
+        url: /api-docs/prescription-service
+    urlsPrimaryName: user-service
 management:
   endpoints:
     web:
       exposure:
         include: health,info,prometheus,metrics
-
   endpoint:
     health:
       show-details: always
-
   prometheus:
     metrics:
       export:
