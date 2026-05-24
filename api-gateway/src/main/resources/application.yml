@@ -42,6 +42,12 @@ spring:
           predicates:
             - Path=/api/dmp/**
 
+        # ✅ Prescription Service (NEWLY ADDED)
+        - id: prescription-service
+          uri: lb://prescription-service
+          predicates:
+            - Path=/api/prescriptions/**
+
       # ✅ CORS (Web + Mobile)
       globalcors:
         add-to-simple-url-handler-mapping: true
@@ -50,7 +56,7 @@ spring:
             allowedOriginPatterns:
               - "http://localhost:*"
               - "http://127.0.0.1:*"
-            allowedMethods: [GET, POST, PUT, DELETE, OPTIONS]
+            allowedMethods: [GET, POST, PUT, DELETE, OPTIONS, PATCH]
             allowedHeaders: ["Authorization", "Content-Type", "X-Requested-With"]
             exposedHeaders: ["Authorization"]
             allowCredentials: true
