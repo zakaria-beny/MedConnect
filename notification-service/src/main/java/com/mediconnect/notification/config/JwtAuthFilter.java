@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -18,8 +19,8 @@ import java.util.ArrayList;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private final String JWT_SECRET =
-            "medconnect-super-secret-key-that-is-at-least-32-chars-long";
+    @Value("${medconnect.security.jwt-secret}")
+    private String jwtSecret;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -38,7 +39,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String token = authHeader.substring(7);
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(Keys.hmacShaKeyFor(
-                            JWT_SECRET.getBytes(StandardCharsets.UTF_8)))
+                            jwtSecret.getBytes(StandardCharsets.UTF_8)))
                     .build()
                     .parseClaimsJws(token)
                     .getBody();

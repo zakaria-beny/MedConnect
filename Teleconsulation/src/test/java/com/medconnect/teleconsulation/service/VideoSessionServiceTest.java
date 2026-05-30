@@ -6,7 +6,7 @@ import com.medconnect.teleconsulation.dto.response.SessionResponse;
 import com.medconnect.teleconsulation.dto.response.SessionStatusResponse;
 import com.medconnect.teleconsulation.exception.SessionAlreadyEndedException;
 import com.medconnect.teleconsulation.exception.SessionNotFoundException;
-import com.medconnect.teleconsulation.kafka.KafkaEventService;
+import com.medconnect.teleconsulation.kafka.IKafkaEventService;
 import com.medconnect.teleconsulation.model.SessionStatus;
 import com.medconnect.teleconsulation.model.VideoSession;
 import com.medconnect.teleconsulation.repository.SessionEventRepository;
@@ -17,7 +17,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -34,10 +33,9 @@ class VideoSessionServiceTest {
     @Mock VideoSessionRepository videoSessionRepository;
     @Mock SessionParticipantRepository participantRepository;
     @Mock SessionEventRepository sessionEventRepository;
-    @Mock EncryptionService encryptionService;
-    @Mock KafkaEventService kafkaEventService;
+    @Mock IKafkaEventService kafkaEventService;
 
-    @InjectMocks VideoSessionService service;
+    private VideoSessionService service;
 
     private VideoSession activeSession;
     private VideoSession createdSession;
@@ -71,6 +69,14 @@ class VideoSessionServiceTest {
                 .patientId("pat-001")
                 .status(SessionStatus.ENDED)
                 .build();
+
+        service = new VideoSessionService(
+                videoSessionRepository,
+                participantRepository,
+                sessionEventRepository,
+                new EncryptionService(),
+                kafkaEventService
+        );
     }
 
     // ─── createSession ────────────────────────────────────────────────────────
@@ -82,7 +88,6 @@ class VideoSessionServiceTest {
         @Test
         @DisplayName("Happy path: valid request creates session with CREATED status")
         void happyPath() {
-            when(encryptionService.generateSessionKey()).thenReturn("key-abc");
             when(videoSessionRepository.save(any())).thenAnswer(inv -> {
                 VideoSession s = inv.getArgument(0);
                 s.setId("new-id");
@@ -120,7 +125,6 @@ class VideoSessionServiceTest {
             when(videoSessionRepository.findBySessionId("sess-001")).thenReturn(Optional.of(createdSession));
             when(videoSessionRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
             when(sessionEventRepository.save(any())).thenReturn(null);
-            when(encryptionService.initiateDTLSHandshake(anyString())).thenReturn("token");
 
             SessionResponse resp = service.startSession("sess-001");
 

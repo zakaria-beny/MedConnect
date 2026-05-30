@@ -3,7 +3,7 @@ package com.medconnect.teleconsulation.service;
 import com.medconnect.teleconsulation.dto.response.RecordingResponse;
 import com.medconnect.teleconsulation.exception.ConsentRequiredException;
 import com.medconnect.teleconsulation.exception.SessionNotFoundException;
-import com.medconnect.teleconsulation.kafka.KafkaEventService;
+import com.medconnect.teleconsulation.kafka.IKafkaEventService;
 import com.medconnect.teleconsulation.model.Recording;
 import com.medconnect.teleconsulation.model.SessionEvent;
 import com.medconnect.teleconsulation.model.VideoSession;
@@ -23,7 +23,7 @@ public class RecordingService {
     private final RecordingRepository recordingRepository;
     private final VideoSessionRepository videoSessionRepository;
     private final SessionEventRepository sessionEventRepository;
-    private final KafkaEventService kafkaEventService;
+    private final IKafkaEventService kafkaEventService;
 
     public RecordingResponse startRecording(String sessionId) {
         if (!validateConsent(sessionId)) {

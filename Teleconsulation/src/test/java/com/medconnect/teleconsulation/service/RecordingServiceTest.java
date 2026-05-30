@@ -3,7 +3,7 @@ package com.medconnect.teleconsulation.service;
 import com.medconnect.teleconsulation.dto.response.RecordingResponse;
 import com.medconnect.teleconsulation.exception.ConsentRequiredException;
 import com.medconnect.teleconsulation.exception.SessionNotFoundException;
-import com.medconnect.teleconsulation.kafka.KafkaEventService;
+import com.medconnect.teleconsulation.kafka.IKafkaEventService;
 import com.medconnect.teleconsulation.model.Recording;
 import com.medconnect.teleconsulation.model.SessionStatus;
 import com.medconnect.teleconsulation.model.VideoSession;
@@ -32,7 +32,7 @@ class RecordingServiceTest {
     @Mock RecordingRepository recordingRepository;
     @Mock VideoSessionRepository videoSessionRepository;
     @Mock SessionEventRepository sessionEventRepository;
-    @Mock KafkaEventService kafkaEventService;
+    @Mock IKafkaEventService kafkaEventService;
 
     @InjectMocks RecordingService service;
 

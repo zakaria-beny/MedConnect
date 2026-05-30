@@ -16,7 +16,7 @@ A complete Spring Boot microservices architecture with authentication, user mana
 
 ### For Frontend Developers (Oumaima 👩‍💻)
 - [Frontend Integration](#frontend-integration) - How to connect frontend
-- [API Reference](#api-endpoints---quick-reference) - All 30 endpoints
+- [API Reference](#api-endpoints---quick-reference) - Full list of endpoints
 - [Examples](#examples) - Code snippets
 
 ### For DevOps/Deployment
@@ -243,7 +243,7 @@ http://localhost:8080/
 ```
 
 What you can do in the built-in tester:
-- Load presets for Auth, Users, and DMP endpoints
+- Load presets for Auth and Users endpoints
 - Paste your JWT token once, then call protected endpoints
 - Edit method/path/query/body and send requests directly
 - See formatted response + a generated `curl` command
@@ -312,7 +312,7 @@ mvn clean test jacoco:report
 | GET | `/api/users/batch-import/{id}/status` | Check import progress |
 | POST | `/api/users/{userId}/clinics` | Create clinic |
 
-**Full API Reference**: See `FRONTEND_API_GUIDE.md` (30 endpoints with examples)
+**Full API Reference**: See `API_ENDPOINTS.md` (all Auth and Users endpoints)
 
 ---
 
@@ -469,7 +469,7 @@ const doctors = await api.get('/api/users/doctors/search', {
 ### Frontend Documentation
 
 **See sections below for:**
-1. **[API Endpoints](#api-endpoints)** - All 30 endpoints with examples
+1. **[API Endpoints](#api-endpoints)** - Full list in `API_ENDPOINTS.md`
 2. **[Common Frontend Flows](#common-frontend-flows)** - Login, profiles, search
 
 ---

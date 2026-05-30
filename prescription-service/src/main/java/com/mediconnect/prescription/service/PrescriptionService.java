@@ -103,7 +103,7 @@ public class PrescriptionService {
         return prescriptionMapper.toResponseList(prescriptions);
     }
 
-    public PrescriptionResponse signPrescription(String id, SignRequest request) {
+    public PrescriptionResponse signPrescription(String id, SignRequest request) throws Exception {
         log.info("Signing prescription {}", id);
 
         Prescription prescription = prescriptionRepository.findById(id)

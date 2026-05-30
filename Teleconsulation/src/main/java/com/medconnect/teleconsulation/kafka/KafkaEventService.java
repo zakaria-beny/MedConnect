@@ -8,10 +8,11 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class KafkaEventService {
+public class KafkaEventService implements IKafkaEventService {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
 
+    @Override
     public void publish(String topic, String sessionId) {
         try {
             kafkaTemplate.send(topic, sessionId, sessionId);
@@ -21,6 +22,7 @@ public class KafkaEventService {
         }
     }
 
+    @Override
     public void publish(String topic, String key, String payload) {
         try {
             kafkaTemplate.send(topic, key, payload);

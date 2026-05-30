@@ -80,7 +80,7 @@ public class PrescriptionController {
     @PostMapping("/{id}/sign")
     public ResponseEntity<ApiResponse<PrescriptionResponse>> signPrescription(
             @PathVariable String id,
-            @Valid @RequestBody SignRequest request) {
+            @Valid @RequestBody SignRequest request) throws Exception {
         log.info("Signing prescription {} from controller", id);
         PrescriptionResponse response = prescriptionService.signPrescription(id, request);
         return ResponseEntity.ok(ApiResponse.success("Prescription signed successfully", response));
@@ -105,7 +105,7 @@ public class PrescriptionController {
     }
 
     @GetMapping("/{id}/qr")
-    public ResponseEntity<ApiResponse<QRCodeResponse>> getQRCode(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<QRCodeResponse>> getQRCode(@PathVariable String id) throws Exception {
         log.info("Generating QR code for prescription {} from controller", id);
         String qrCodeBase64 = qrCodeService.generateQRCode(id);
         QRCodeResponse response = QRCodeResponse.builder()

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedConnect API Tester</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main class="container">
+    <h1>MedConnect API Tester</h1>
+    <p class="subtitle">Call Auth, Users, and DMP endpoints directly through the API Gateway.</p>
+
+    <section class="card">
+        <div class="grid">
+            <label>
+                Base URL
+                <input id="baseUrl" type="text" value="">
+            </label>
+
+            <label>
+                Preset endpoint
+                <select id="preset"></select>
+            </label>
+
+            <button id="applyPreset" type="button" class="secondary">Load preset</button>
+
+            <label>
+                Method
+                <select id="method">
+                    <option>GET</option>
+                    <option>POST</option>
+                    <option>PUT</option>
+                    <option>PATCH</option>
+                    <option>DELETE</option>
+                </select>
+            </label>
+
+            <label class="span-2">
+                Path
+                <input id="path" type="text" placeholder="/api/auth/signup">
+            </label>
+
+            <label>
+                Query string
+                <input id="query" type="text" placeholder="page=0&size=10">
+            </label>
+
+            <label class="span-3">
+                Authorization token (optional)
+                <textarea id="token" rows="2" placeholder="Paste JWT token here"></textarea>
+            </label>
+
+            <label class="inline">
+                <input id="useBearer" type="checkbox" checked>
+                Prefix token with Bearer
+            </label>
+
+            <label class="span-3">
+                Request body (JSON or raw text)
+                <textarea id="body" rows="10" placeholder="{&quot;email&quot;:&quot;test@example.com&quot;,&quot;password&quot;:&quot;Test123!&quot;}"></textarea>
+            </label>
+        </div>
+
+        <div class="actions">
+            <button id="sendBtn" type="button">Send request</button>
+            <button id="clearBtn" type="button" class="secondary">Clear response</button>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Generated cURL</h2>
+        <pre id="curlPreview">No request sent yet.</pre>
+    </section>
+
+    <section class="card">
+        <h2>Response</h2>
+        <pre id="responseMeta">No request sent yet.</pre>
+        <pre id="responseBody"></pre>
+    </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

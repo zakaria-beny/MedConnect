@@ -2,9 +2,10 @@ package com.mediconnect.dmp;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
-// @SpringBootApplication = tells Spring: "This is the main class, start everything from here"
 @SpringBootApplication
+@EnableDiscoveryClient
 public class DmpServiceApplication {
 
     public static void main(String[] args) {

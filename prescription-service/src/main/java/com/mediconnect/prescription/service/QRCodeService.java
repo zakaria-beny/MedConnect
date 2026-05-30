@@ -24,37 +24,27 @@ import java.util.Base64;
 @Slf4j
 public class QRCodeService {
 
-    public String generateQRCode(String prescriptionId) {
-        try {
-            String data = "{\"prescriptionId\":\"" + prescriptionId + "\",\"timestamp\":\"" + LocalDateTime.now() + "\"}";
-            QRCodeWriter qrCodeWriter = new QRCodeWriter();
-            BitMatrix bitMatrix = qrCodeWriter.encode(data, BarcodeFormat.QR_CODE, 300, 300);
+    public String generateQRCode(String prescriptionId) throws Exception {
+        String data = "{\"prescriptionId\":\"" + prescriptionId + "\",\"timestamp\":\"" + LocalDateTime.now() + "\"}";
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix = qrCodeWriter.encode(data, BarcodeFormat.QR_CODE, 300, 300);
 
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", outputStream);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        MatrixToImageWriter.writeToStream(bitMatrix, "PNG", outputStream);
 
-            return Base64.getEncoder().encodeToString(outputStream.toByteArray());
-        } catch (Exception e) {
-            log.error("Error generating QR code for prescription {}", prescriptionId, e);
-            return null;
-        }
+        return Base64.getEncoder().encodeToString(outputStream.toByteArray());
     }
 
-    public String decodeQRCode(String base64) {
-        try {
-            byte[] decodedBytes = Base64.getDecoder().decode(base64);
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(decodedBytes);
-            BufferedImage bufferedImage = ImageIO.read(byteArrayInputStream);
+    public String decodeQRCode(String base64) throws IOException, NotFoundException {
+        byte[] decodedBytes = Base64.getDecoder().decode(base64);
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(decodedBytes);
+        BufferedImage bufferedImage = ImageIO.read(byteArrayInputStream);
 
-            MultiFormatReader multiFormatReader = new MultiFormatReader();
-            com.google.zxing.BinaryBitmap binaryBitmap = new com.google.zxing.BinaryBitmap(
-                    new HybridBinarizer(new BufferedImageLuminanceSource(bufferedImage)));
-            Result result = multiFormatReader.decode(binaryBitmap);
+        MultiFormatReader multiFormatReader = new MultiFormatReader();
+        com.google.zxing.BinaryBitmap binaryBitmap = new com.google.zxing.BinaryBitmap(
+                new HybridBinarizer(new BufferedImageLuminanceSource(bufferedImage)));
+        Result result = multiFormatReader.decode(binaryBitmap);
 
-            return result.getText();
-        } catch (IOException | NotFoundException e) {
-            log.error("Error decoding QR code", e);
-            return null;
-        }
+        return result.getText();
     }
 }

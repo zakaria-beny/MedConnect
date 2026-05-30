@@ -6,7 +6,7 @@ import com.medconnect.teleconsulation.dto.response.SessionResponse;
 import com.medconnect.teleconsulation.dto.response.SessionStatusResponse;
 import com.medconnect.teleconsulation.exception.SessionAlreadyEndedException;
 import com.medconnect.teleconsulation.exception.SessionNotFoundException;
-import com.medconnect.teleconsulation.kafka.KafkaEventService;
+import com.medconnect.teleconsulation.kafka.IKafkaEventService;
 import com.medconnect.teleconsulation.model.SessionEvent;
 import com.medconnect.teleconsulation.model.SessionStatus;
 import com.medconnect.teleconsulation.model.VideoSession;
@@ -29,7 +29,7 @@ public class VideoSessionService {
     private final SessionParticipantRepository participantRepository;
     private final SessionEventRepository sessionEventRepository;
     private final EncryptionService encryptionService;
-    private final KafkaEventService kafkaEventService;
+    private final IKafkaEventService kafkaEventService;
 
     public SessionResponse createSession(CreateSessionRequest request) {
         String sessionId = UUID.randomUUID().toString();

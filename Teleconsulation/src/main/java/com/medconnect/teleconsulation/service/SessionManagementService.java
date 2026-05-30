@@ -3,7 +3,7 @@ package com.medconnect.teleconsulation.service;
 import com.medconnect.teleconsulation.dto.response.SessionResponse;
 import com.medconnect.teleconsulation.exception.SessionAlreadyEndedException;
 import com.medconnect.teleconsulation.exception.SessionNotFoundException;
-import com.medconnect.teleconsulation.kafka.KafkaEventService;
+import com.medconnect.teleconsulation.kafka.IKafkaEventService;
 import com.medconnect.teleconsulation.model.SessionEvent;
 import com.medconnect.teleconsulation.model.SessionStatus;
 import com.medconnect.teleconsulation.model.VideoSession;
@@ -23,7 +23,7 @@ public class SessionManagementService {
 
     private final VideoSessionRepository videoSessionRepository;
     private final SessionEventRepository sessionEventRepository;
-    private final KafkaEventService kafkaEventService;
+    private final IKafkaEventService kafkaEventService;
     private final VideoSessionService videoSessionService;
     private final RecordingService recordingService;
 

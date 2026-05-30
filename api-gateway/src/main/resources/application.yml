@@ -1,8 +1,5 @@
-JWT_SECRET: medconnect-super-secret-key-that-is-at-least-32-chars-long
-
 server:
   port: 8080
-  address: 0.0.0.0
 
 spring:
   application:
@@ -44,6 +41,31 @@ spring:
           predicates:
             - Path=/api/dmp/**
 
+        - id: appointment-service
+          uri: lb://appointment-service
+          predicates:
+            - Path=/api/appointments/**,/api/doctors/**,/api/wait-list/**,/api/agenda/**
+
+        - id: teleconsultation-service
+          uri: lb://teleconsultation-service
+          predicates:
+            - Path=/api/teleconsult/**
+
+        - id: messaging-service
+          uri: lb://messaging-service
+          predicates:
+            - Path=/api/messages/**
+
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/notifications/**
+
+        - id: prescription-service
+          uri: lb://prescription-service
+          predicates:
+            - Path=/api/prescriptions/**
+
         - id: user-service-openapi
           uri: lb://user-service
           predicates:
@@ -58,6 +80,53 @@ spring:
           filters:
             - RewritePath=/api-docs/dmp-service, /v3/api-docs
 
+        - id: appointment-service-openapi
+          uri: lb://appointment-service
+          predicates:
+            - Path=/api-docs/appointment-service
+          filters:
+            - RewritePath=/api-docs/appointment-service, /v3/api-docs
+
+        - id: teleconsultation-service-openapi
+          uri: lb://teleconsultation-service
+          predicates:
+            - Path=/api-docs/teleconsultation-service
+          filters:
+            - RewritePath=/api-docs/teleconsultation-service, /v3/api-docs
+
+        - id: messaging-service-openapi
+          uri: lb://messaging-service
+          predicates:
+            - Path=/api-docs/messaging-service
+          filters:
+            - RewritePath=/api-docs/messaging-service, /v3/api-docs
+
+        - id: notification-service-openapi
+          uri: lb://notification-service
+          predicates:
+            - Path=/api-docs/notification-service
+          filters:
+            - RewritePath=/api-docs/notification-service, /v3/api-docs
+
+        - id: prescription-service-openapi
+          uri: lb://prescription-service
+          predicates:
+            - Path=/api-docs/prescription-service
+          filters:
+            - RewritePath=/api-docs/prescription-service, /v3/api-docs
+
+        - id: audit-service
+          uri: lb://audit-service
+          predicates:
+            - Path=/api/audit/**,/api/gdpr/**,/api/compliance/**,/api/anomalies/**
+
+        - id: audit-service-openapi
+          uri: lb://audit-service
+          predicates:
+            - Path=/api-docs/audit-service
+          filters:
+            - RewritePath=/api-docs/audit-service, /v3/api-docs
+
       # ✅ CORS (Web + Mobile)
       globalcors:
         add-to-simple-url-handler-mapping: true
@@ -65,7 +134,6 @@ spring:
           '[/**]':
             allowedOriginPatterns:
               - "http://localhost:*"
-              - "http://127.0.0.1:*"
             allowedMethods: [GET, POST, PUT, DELETE, OPTIONS]
             allowedHeaders: ["Authorization", "Content-Type", "X-Requested-With"]
             exposedHeaders: ["Authorization"]
@@ -74,7 +142,7 @@ spring:
 # ✅ Your custom config
 medconnect:
   security:
-    jwt-secret: ${JWT_SECRET:medconnect-super-secret-key-that-is-at-least-32-chars-long}
+    jwt-secret: ${JWT_SECRET:test-secret-key}
 
 eureka:
   client:
@@ -91,6 +159,18 @@ springdoc:
         url: /api-docs/user-service
       - name: dmp-service
         url: /api-docs/dmp-service
+      - name: appointment-service
+        url: /api-docs/appointment-service
+      - name: teleconsultation-service
+        url: /api-docs/teleconsultation-service
+      - name: messaging-service
+        url: /api-docs/messaging-service
+      - name: notification-service
+        url: /api-docs/notification-service
+      - name: audit-service
+        url: /api-docs/audit-service
+      - name: prescription-service
+        url: /api-docs/prescription-service
     urlsPrimaryName: user-service
 
 management:
@@ -101,7 +181,7 @@ management:
 
   endpoint:
     health:
-      show-details: always
+      show-details: when_authorized
 
   prometheus:
     metrics:

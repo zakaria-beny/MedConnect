@@ -12,7 +12,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>com.mediconnect</groupId>
+    <groupId>com.medconnect</groupId>
     <artifactId>dmp-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>dmp-service</name>
@@ -127,7 +127,7 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>1.18.30</version>
+                            <version>${lombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
