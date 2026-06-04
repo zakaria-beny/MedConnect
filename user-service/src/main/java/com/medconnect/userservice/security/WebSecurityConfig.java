@@ -80,6 +80,7 @@ public class WebSecurityConfig {
                                 "/api/users/clinics/**"
                         ).authenticated()
                         .requestMatchers(
+                                "/api/users",
                                 "/api/users/doctors/*/verification",
                                 "/api/users/pharmacists/*/verification"
                         ).hasRole("ADMIN")

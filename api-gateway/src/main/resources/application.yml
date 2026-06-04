@@ -34,6 +34,31 @@ spring:
           uri: lb://prescription-service
           predicates:
             - Path=/api/prescriptions/**
+
+        # 👇 ADDED
+        - id: appointment-service
+          uri: lb://appointment-service
+          predicates:
+            - Path=/api/appointments/**
+
+        # 👇 ADDED
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/notifications/**
+
+        # 👇 ADDED
+        - id: teleconsultation-service
+          uri: lb://teleconsultation-service
+          predicates:
+            - Path=/api/teleconsult/**
+
+        # 👇 ADDED
+        - id: messaging-service
+          uri: lb://messaging-service
+          predicates:
+            - Path=/api/messages/**
+
         - id: user-service-openapi
           uri: lb://user-service
           predicates:
@@ -63,15 +88,18 @@ spring:
             allowedHeaders: ["Authorization", "Content-Type", "X-Requested-With"]
             exposedHeaders: ["Authorization"]
             allowCredentials: true
+
 medconnect:
   security:
     jwt-secret: ${JWT_SECRET:medconnect-super-secret-key-that-is-at-least-32-chars-long}
+
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://medconnect-discovery:8761/eureka/ # 👈 FIXED localhost -> container name
   instance:
     prefer-ip-address: true
+
 springdoc:
   swagger-ui:
     disable-swagger-default-url: true
@@ -83,6 +111,7 @@ springdoc:
       - name: prescription-service
         url: /api-docs/prescription-service
     urlsPrimaryName: user-service
+
 management:
   endpoints:
     web:

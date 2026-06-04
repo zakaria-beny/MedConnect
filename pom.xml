@@ -23,6 +23,10 @@
         <module>appointment-service</module>
         <module>dmp-service</module>
         <module>prescription-service</module>
+        <module>Messaging-service</module>
+        <module>notification-service</module>
+        <module>teleconsulation</module>
+
     </modules>
     <properties>
         <java.version>17</java.version>
