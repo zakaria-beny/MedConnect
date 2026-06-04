@@ -23,6 +23,7 @@ import com.medconnect.userservice.repository.PatientProfileRepository;
 import com.medconnect.userservice.repository.PharmacistProfileRepository;
 import com.medconnect.userservice.repository.SubscriptionRepository;
 import com.medconnect.userservice.repository.UserRepository;
+import com.medconnect.userservice.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -174,13 +175,13 @@ public class UserManagementService {
 
     public DoctorProfileResponse getDoctorProfile(String userId) {
         DoctorProfile profile = doctorProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Doctor profile not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found."));
         return toResponse(profile);
     }
 
     public PharmacistProfileResponse getPharmacistProfile(String userId) {
         PharmacistProfile profile = pharmacistProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Pharmacist profile not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("Pharmacist profile not found."));
         return toResponse(profile);
     }
 
