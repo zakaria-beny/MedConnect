@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class UserDetailsImpl implements UserDetails {
@@ -29,7 +30,7 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     public static UserDetailsImpl build(User user) {
-        List<GrantedAuthority> authorities = user.getRoles().stream()
+        List<GrantedAuthority> authorities = Optional.ofNullable(user.getRoles()).orElseGet(List::of).stream()
                 .map(role -> new SimpleGrantedAuthority(role))
                 .collect(Collectors.toList());
 

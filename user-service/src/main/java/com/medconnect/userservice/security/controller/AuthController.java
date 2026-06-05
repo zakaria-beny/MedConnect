@@ -258,9 +258,12 @@ public class AuthController {
         JwtResponse response = createJwtResponse(user, request);
 
         Map<String, Object> resp = new HashMap<>();
+        resp.put("token", response.getToken());
         resp.put("accessToken", response.getToken());
+        resp.put("type", response.getType());
         resp.put("refreshToken", response.getRefreshToken());
         resp.put("tokenType", "Bearer");
+        resp.put("id", user.getId());
         resp.put("userId", user.getId());
         resp.put("email", user.getEmail());
         resp.put("roles", user.getRoles());

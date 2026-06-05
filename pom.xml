@@ -26,6 +26,7 @@
         <module>Messaging-service</module>
         <module>notification-service</module>
         <module>teleconsulation</module>
+        <module>audit-service</module>
 
     </modules>
     <properties>

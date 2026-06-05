@@ -1,5 +1,7 @@
 package com.medconnect.userservice.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -10,6 +12,8 @@ import java.util.Map;
 
 @Component
 public class UserManagementEventPublisher {
+
+    private static final Logger log = LoggerFactory.getLogger(UserManagementEventPublisher.class);
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
@@ -73,6 +77,10 @@ public class UserManagementEventPublisher {
         event.put("email", email);
         event.put("details", details);
         String key = userId != null ? userId : email;
-        kafkaTemplate.send(topic, key, event);
+        try {
+            kafkaTemplate.send(topic, key, event);
+        } catch (Exception e) {
+            log.warn("Failed to publish Kafka event [{}] for {}: {}", eventType, key, e.getMessage());
+        }
     }
 }
