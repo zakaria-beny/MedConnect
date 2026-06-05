@@ -23,16 +23,15 @@
         <module>appointment-service</module>
         <module>dmp-service</module>
         <module>prescription-service</module>
-        <module>Teleconsulation</module>
         <module>Messaging-service</module>
         <module>notification-service</module>
-        <module>audit-service</module>
+        <module>teleconsulation</module>
+
     </modules>
     <properties>
         <java.version>17</java.version>
         <spring-cloud.version>2023.0.0</spring-cloud.version>
         <lombok.version>1.18.46</lombok.version>
-        <mockito.version>5.11.0</mockito.version>
     </properties>
 
     <dependencyManagement>
