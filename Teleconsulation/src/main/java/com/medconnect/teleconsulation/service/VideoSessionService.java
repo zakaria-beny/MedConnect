@@ -32,6 +32,12 @@ public class VideoSessionService {
     private final IKafkaEventService kafkaEventService;
 
     public SessionResponse createSession(CreateSessionRequest request) {
+        return videoSessionRepository.findByAppointmentId(request.getAppointmentId())
+                .map(this::toResponse)
+                .orElseGet(() -> createNewSession(request));
+    }
+
+    private SessionResponse createNewSession(CreateSessionRequest request) {
         String sessionId = UUID.randomUUID().toString();
         String encryptionKey = encryptionService.generateSessionKey();
 

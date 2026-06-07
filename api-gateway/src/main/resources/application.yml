@@ -8,6 +8,9 @@ spring:
   main:
     web-application-type: reactive
 
+  codec:
+    max-in-memory-size: 20MB
+
 
 
   cloud:
@@ -142,12 +145,12 @@ spring:
 # ✅ Your custom config
 medconnect:
   security:
-    jwt-secret: ${JWT_SECRET:test-secret-key}
+    jwt-secret: ${JWT_SECRET:medconnect-local-dev-secret-key-at-least-32-chars-long}
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka/}
   instance:
     prefer-ip-address: true
 

@@ -26,12 +26,20 @@ public class DocumentMapper {
     }
 
     public DocumentResponse toResponse(PatientDocument document) {
+        return toResponse(document, true);
+    }
+
+    public DocumentResponse toMetadataResponse(PatientDocument document) {
+        return toResponse(document, false);
+    }
+
+    private DocumentResponse toResponse(PatientDocument document, boolean includeFileUrl) {
         return DocumentResponse.builder()
                 .id(document.getId())
                 .patientId(document.getPatientId())
                 .documentName(document.getDocumentName())
                 .documentType(document.getDocumentType())
-                .fileUrl(document.getFileUrl())
+                .fileUrl(includeFileUrl ? document.getFileUrl() : null)
                 .mimeType(document.getMimeType())
                 .fileSize(document.getFileSize())
                 .uploadedBy(document.getUploadedBy())
@@ -43,7 +51,7 @@ public class DocumentMapper {
 
     public List<DocumentResponse> toResponseList(List<PatientDocument> documents) {
         return documents.stream()
-                .map(this::toResponse)
+                .map(this::toMetadataResponse)
                 .collect(Collectors.toList());
     }
 }

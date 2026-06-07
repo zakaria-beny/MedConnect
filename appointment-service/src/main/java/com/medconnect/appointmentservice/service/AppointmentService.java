@@ -9,6 +9,7 @@ import com.medconnect.appointmentservice.kafka.KafkaProducerService;
 import com.medconnect.appointmentservice.model.Appointment;
 import com.medconnect.appointmentservice.model.AppointmentSlot;
 import com.medconnect.appointmentservice.model.AppointmentStatus;
+import com.medconnect.appointmentservice.model.AppointmentType;
 import com.medconnect.appointmentservice.repository.AppointmentRepository;
 import com.medconnect.appointmentservice.repository.AppointmentSlotRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final AppointmentSlotRepository slotRepository;
     private final KafkaProducerService kafkaProducerService;
+    private final TeleconsultationClient teleconsultationClient;
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
     public AppointmentResponse bookAppointment(BookAppointmentRequest request) {
@@ -55,16 +57,7 @@ public class AppointmentService {
 
         Appointment saved = appointmentRepository.save(appointment);
         
-        // Mark slot as booked
-        String slotStartTime = dateTime.toLocalTime().format(TIME_FORMATTER);
-        List<AppointmentSlot> slots = slotRepository.findByDoctorIdAndDate(request.getDoctorId(), dateTime.toLocalDate());
-        slots.stream()
-                .filter(s -> s.getStartTime().equals(slotStartTime) && !s.isBooked())
-                .forEach(s -> {
-                    s.setBooked(true);
-                    s.setAppointmentId(saved.getId());
-                    slotRepository.save(s);
-                });
+        bookSlot(saved);
 
         kafkaProducerService.publishAppointmentBooked(saved);
         log.info("Appointment booked successfully: {}", saved.getId());
@@ -89,12 +82,60 @@ public class AppointmentService {
         LocalDateTime newDateTime = request.getNewDateTime();
         checkDoubleBooking(appointment.getDoctorId(), newDateTime);
 
+        releaseSlot(appointment);
         appointment.setDateTime(newDateTime);
+        appointment.setStatus(AppointmentStatus.SCHEDULED);
+        appointment.setTeleconsultSessionId(null);
         appointment.setUpdatedAt(LocalDateTime.now());
         Appointment updated = appointmentRepository.save(appointment);
+        bookSlot(updated);
         
         kafkaProducerService.publishAppointmentRescheduled(updated);
         log.info("Appointment rescheduled successfully: {}", id);
+        return mapToResponse(updated);
+    }
+
+    public AppointmentResponse confirmAppointment(String id) {
+        log.info("Confirming appointment: {}", id);
+
+        Appointment appointment = appointmentRepository.findById(id)
+                .orElseThrow(() -> new AppointmentNotFoundException("Appointment not found: " + id));
+
+        if (appointment.getStatus() == AppointmentStatus.CANCELLED || appointment.getStatus() == AppointmentStatus.REJECTED) {
+            throw new IllegalStateException("Cannot confirm appointment with status: " + appointment.getStatus());
+        }
+
+        appointment.setStatus(AppointmentStatus.CONFIRMED);
+        if (appointment.getType() == AppointmentType.VIDEO && appointment.getTeleconsultSessionId() == null) {
+            teleconsultationClient.createSession(appointment)
+                    .ifPresent(appointment::setTeleconsultSessionId);
+        }
+        appointment.setUpdatedAt(LocalDateTime.now());
+
+        Appointment updated = appointmentRepository.save(appointment);
+        kafkaProducerService.publishAppointmentConfirmed(updated);
+        log.info("Appointment confirmed successfully: {}", id);
+        return mapToResponse(updated);
+    }
+
+    public AppointmentResponse rejectAppointment(String id, String reason) {
+        log.info("Rejecting appointment: {}", id);
+
+        Appointment appointment = appointmentRepository.findById(id)
+                .orElseThrow(() -> new AppointmentNotFoundException("Appointment not found: " + id));
+
+        if (appointment.getStatus() == AppointmentStatus.COMPLETED || appointment.getStatus() == AppointmentStatus.NO_SHOW) {
+            throw new IllegalStateException("Cannot reject appointment with status: " + appointment.getStatus());
+        }
+
+        appointment.setStatus(AppointmentStatus.REJECTED);
+        appointment.setCancellationReason(reason);
+        appointment.setUpdatedAt(LocalDateTime.now());
+        releaseSlot(appointment);
+
+        Appointment updated = appointmentRepository.save(appointment);
+        kafkaProducerService.publishAppointmentRejected(updated);
+        log.info("Appointment rejected successfully: {}", id);
         return mapToResponse(updated);
     }
 
@@ -107,6 +148,7 @@ public class AppointmentService {
         appointment.setStatus(AppointmentStatus.CANCELLED);
         appointment.setCancellationReason(reason);
         appointment.setUpdatedAt(LocalDateTime.now());
+        releaseSlot(appointment);
         appointmentRepository.save(appointment);
         
         kafkaProducerService.publishAppointmentCancelled(appointment);
@@ -134,12 +176,33 @@ public class AppointmentService {
     private void checkDoubleBooking(String doctorId, LocalDateTime dateTime) {
         log.debug("Checking for double booking: doctor {}, dateTime {}", doctorId, dateTime);
         
-        Optional<Appointment> existing = appointmentRepository.findByDoctorIdAndDateTimeAndStatusNot(
-                doctorId, dateTime, AppointmentStatus.CANCELLED);
+        Optional<Appointment> existing = appointmentRepository.findByDoctorIdAndDateTimeAndStatusNotIn(
+                doctorId, dateTime, List.of(AppointmentStatus.CANCELLED, AppointmentStatus.REJECTED));
         
         if (existing.isPresent()) {
             throw new SlotAlreadyBookedException("Slot already booked for doctor: " + doctorId + " at " + dateTime);
         }
+    }
+
+    private void bookSlot(Appointment appointment) {
+        String slotStartTime = appointment.getDateTime().toLocalTime().format(TIME_FORMATTER);
+        slotRepository.findByDoctorIdAndDateAndStartTime(
+                appointment.getDoctorId(),
+                appointment.getDateTime().toLocalDate(),
+                slotStartTime
+        ).ifPresent(slot -> {
+            slot.setBooked(true);
+            slot.setAppointmentId(appointment.getId());
+            slotRepository.save(slot);
+        });
+    }
+
+    private void releaseSlot(Appointment appointment) {
+        slotRepository.findByAppointmentId(appointment.getId()).ifPresent(slot -> {
+            slot.setBooked(false);
+            slot.setAppointmentId(null);
+            slotRepository.save(slot);
+        });
     }
 
     private AppointmentResponse mapToResponse(Appointment appointment) {
@@ -153,6 +216,7 @@ public class AppointmentService {
                 .status(appointment.getStatus())
                 .reason(appointment.getReason())
                 .cancellationReason(appointment.getCancellationReason())
+                .teleconsultSessionId(appointment.getTeleconsultSessionId())
                 .createdAt(appointment.getCreatedAt().toString())
                 .updatedAt(appointment.getUpdatedAt().toString())
                 .build();

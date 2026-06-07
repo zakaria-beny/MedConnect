@@ -6,6 +6,7 @@ package com.medconnect.appointmentservice.model;
 public enum AppointmentStatus {
     SCHEDULED,
     CONFIRMED,
+    REJECTED,
     CANCELLED,
     COMPLETED,
     NO_SHOW

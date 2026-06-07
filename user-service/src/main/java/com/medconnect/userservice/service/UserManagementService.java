@@ -107,8 +107,9 @@ public class UserManagementService {
 
     public DoctorProfileResponse createDoctorProfile(DoctorProfileRequest request) {
         assertUserExists(request.getUserId());
-        if (doctorProfileRepository.findByUserId(request.getUserId()).isPresent()) {
-            throw new RuntimeException("Doctor profile already exists for user.");
+        Optional<DoctorProfile> existingProfile = doctorProfileRepository.findByUserId(request.getUserId());
+        if (existingProfile.isPresent()) {
+            return updateDoctorProfile(request.getUserId(), request);
         }
         validateNationalId(request.getNationalIdNumber());
         requireText(request.getProfessionalRegistrationNumber(), "professionalRegistrationNumber is required.");
@@ -131,6 +132,18 @@ public class UserManagementService {
         profile.setCreatedAt(LocalDateTime.now());
         profile.setUpdatedAt(LocalDateTime.now());
 
+        return toResponse(doctorProfileRepository.save(profile));
+    }
+
+    public DoctorProfileResponse updateDoctorProfile(String userId, DoctorProfileRequest request) {
+        assertUserExists(userId);
+        DoctorProfile profile = doctorProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found."));
+        applyDoctorData(profile, request);
+        profile.setVerificationStatus(ProfessionalVerificationStatus.PENDING_VERIFICATION);
+        profile.setVerificationNote(null);
+        profile.setVerifiedAt(null);
+        profile.setUpdatedAt(LocalDateTime.now());
         return toResponse(doctorProfileRepository.save(profile));
     }
 
@@ -197,7 +210,12 @@ public class UserManagementService {
 
         if (status == ProfessionalVerificationStatus.VERIFIED) {
             validateProfessionalIdentity(profile.getProfessionalRegistrationNumber(), profile.getNationalIdNumber(), profile.getRegistrationAuthority());
-            ensureHasRequiredDocuments(userId, ProfessionalProfileType.DOCTOR);
+            ensureHasRequiredDocuments(
+                    userId,
+                    ProfessionalProfileType.DOCTOR,
+                    profile.getCardFrontImageUrl(),
+                    profile.getCardBackImageUrl()
+            );
         }
 
         profile.setVerificationStatus(status);
@@ -230,7 +248,12 @@ public class UserManagementService {
 
         if (status == ProfessionalVerificationStatus.VERIFIED) {
             validateProfessionalIdentity(profile.getProfessionalRegistrationNumber(), profile.getNationalIdNumber(), profile.getRegistrationAuthority());
-            ensureHasRequiredDocuments(userId, ProfessionalProfileType.PHARMACIST);
+            ensureHasRequiredDocuments(
+                    userId,
+                    ProfessionalProfileType.PHARMACIST,
+                    profile.getCardFrontImageUrl(),
+                    profile.getCardBackImageUrl()
+            );
         }
 
         profile.setVerificationStatus(status);
@@ -300,6 +323,25 @@ public class UserManagementService {
         profile.setAllergies(request.getAllergies());
     }
 
+    private void applyDoctorData(DoctorProfile profile, DoctorProfileRequest request) {
+        validateNationalId(request.getNationalIdNumber());
+        requireText(request.getProfessionalRegistrationNumber(), "professionalRegistrationNumber is required.");
+        requireText(request.getRegistrationAuthority(), "registrationAuthority is required.");
+        profile.setProfessionalRegistrationNumber(request.getProfessionalRegistrationNumber());
+        profile.setNationalIdNumber(request.getNationalIdNumber());
+        profile.setRegistrationAuthority(request.getRegistrationAuthority());
+        profile.setSpecialty(request.getSpecialty());
+        profile.setLanguages(request.getLanguages());
+        profile.setCity(request.getCity());
+        profile.setClinicName(request.getClinicName());
+        if (StringUtils.hasText(request.getCardFrontImageUrl())) {
+            profile.setCardFrontImageUrl(request.getCardFrontImageUrl());
+        }
+        if (StringUtils.hasText(request.getCardBackImageUrl())) {
+            profile.setCardBackImageUrl(request.getCardBackImageUrl());
+        }
+    }
+
     private void assertUserExists(String userId) {
         if (!userRepository.existsById(userId)) {
             throw new RuntimeException("User not found with id " + userId);
@@ -317,9 +359,20 @@ public class UserManagementService {
         }
     }
 
-    private void ensureHasRequiredDocuments(String userId, ProfessionalProfileType profileType) {
+    private void ensureHasRequiredDocuments(
+            String userId,
+            ProfessionalProfileType profileType,
+            String legacyFrontImageUrl,
+            String legacyBackImageUrl
+    ) {
         boolean hasFront = professionalDocumentService.hasActiveCleanDocument(userId, profileType, ProfessionalDocumentSide.FRONT);
         boolean hasBack = professionalDocumentService.hasActiveCleanDocument(userId, profileType, ProfessionalDocumentSide.BACK);
+        if (!hasFront && StringUtils.hasText(legacyFrontImageUrl)) {
+            hasFront = true;
+        }
+        if (!hasBack && StringUtils.hasText(legacyBackImageUrl)) {
+            hasBack = true;
+        }
         if (!hasFront || !hasBack) {
             throw new RuntimeException("Cannot verify profile: both FRONT and BACK proof documents are required and must be malware-scan clean.");
         }

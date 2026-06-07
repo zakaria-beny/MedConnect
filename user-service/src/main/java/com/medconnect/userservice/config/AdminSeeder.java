@@ -34,12 +34,16 @@ public class AdminSeeder implements CommandLineRunner {
         if (!StringUtils.hasText(adminEmail) || !StringUtils.hasText(adminPassword)) {
             throw new IllegalStateException("Admin seeding requires ADMIN_EMAIL and ADMIN_PASSWORD when enabled.");
         }
-        if (userRepository.findByEmail(adminEmail).isPresent()) {
-            System.out.println(" Admin already exists: " + adminEmail);
+        User admin = userRepository.findByEmail(adminEmail).orElseGet(User::new);
+        if (StringUtils.hasText(admin.getId())) {
+            System.out.println(" Admin already exists, updating credentials and role: " + adminEmail);
+            admin.setMotDePasse(passwordEncoder.encode(adminPassword));
+            admin.setRoles(List.of("ROLE_ADMIN"));
+            admin.setEnabled(true);
+            userRepository.save(admin);
             return;
         }
 
-        User admin = new User();
         admin.setNom("Admin");
         admin.setPrenom("medconnect");
         admin.setEmail(adminEmail);

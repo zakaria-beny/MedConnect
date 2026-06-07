@@ -62,6 +62,26 @@ public class AppointmentController {
     }
 
     /**
+     * POST /api/appointments/{id}/confirm
+     */
+    @PostMapping("/{id}/confirm")
+    public ResponseEntity<AppointmentResponse> confirmAppointment(@PathVariable String id) {
+        AppointmentResponse response = appointmentService.confirmAppointment(id);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * POST /api/appointments/{id}/reject
+     */
+    @PostMapping("/{id}/reject")
+    public ResponseEntity<AppointmentResponse> rejectAppointment(
+            @PathVariable String id,
+            @RequestParam(required = false) String reason) {
+        AppointmentResponse response = appointmentService.rejectAppointment(id, reason);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * DELETE /api/appointments/{id}
      */
     @DeleteMapping("/{id}")

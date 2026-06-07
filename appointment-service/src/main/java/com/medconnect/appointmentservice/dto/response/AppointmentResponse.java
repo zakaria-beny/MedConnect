@@ -24,6 +24,7 @@ public class AppointmentResponse {
     private AppointmentStatus status;
     private String reason;
     private String cancellationReason;
+    private String teleconsultSessionId;
     private String createdAt;
     private String updatedAt;
 }

@@ -39,6 +39,26 @@ public class KafkaProducerService {
         }
     }
 
+    public void publishAppointmentConfirmed(Appointment appointment) {
+        try {
+            String message = objectMapper.writeValueAsString(appointment);
+            kafkaTemplate.send("appointment.confirmed", appointment.getId(), message);
+            log.info("Published appointment.confirmed event for appointment: {}", appointment.getId());
+        } catch (Exception e) {
+            log.error("Error publishing appointment.confirmed event", e);
+        }
+    }
+
+    public void publishAppointmentRejected(Appointment appointment) {
+        try {
+            String message = objectMapper.writeValueAsString(appointment);
+            kafkaTemplate.send("appointment.rejected", appointment.getId(), message);
+            log.info("Published appointment.rejected event for appointment: {}", appointment.getId());
+        } catch (Exception e) {
+            log.error("Error publishing appointment.rejected event", e);
+        }
+    }
+
     public void publishAppointmentRescheduled(Appointment appointment) {
         try {
             String message = objectMapper.writeValueAsString(appointment);

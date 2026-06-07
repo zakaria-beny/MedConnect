@@ -128,6 +128,17 @@ public class UserManagementController {
         return ResponseEntity.ok(maskDoctorIfNeeded(response, isAdmin(authentication)));
     }
 
+    @PutMapping("/doctors/{userId}")
+    public ResponseEntity<DoctorProfileResponse> updateDoctorProfile(
+            Authentication authentication,
+            @PathVariable String userId,
+            @Valid @RequestBody DoctorProfileRequest request
+    ) {
+        ensureCanAccessUser(authentication, userId);
+        DoctorProfileResponse response = userManagementService.updateDoctorProfile(userId, request);
+        return ResponseEntity.ok(maskDoctorIfNeeded(response, isAdmin(authentication)));
+    }
+
     @PostMapping("/pharmacists")
     public ResponseEntity<PharmacistProfileResponse> createPharmacistProfile(
             Authentication authentication,
