@@ -142,7 +142,7 @@ spring:
 # ✅ Your custom config
 medconnect:
   security:
-    jwt-secret: ${JWT_SECRET:test-secret-key}
+    jwt-secret: ${JWT_SECRET:my-super-secret-jwt-key-with-at-least-256-bits-for-hmac-sha-algorithm}
 
 eureka:
   client:
